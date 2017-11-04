@@ -1,9 +1,5 @@
 # lab-flask-restplus-swagger
 
-This repo demonstrates how to use Flask-RESTPlus to generate Swagger/OpenAPI docs
-
-# lab-flask-swagger
-
 [![Build Status](https://travis-ci.org/nyu-devops/lab-flask-restplus-swagger.svg?branch=master)](https://travis-ci.org/nyu-devops/lab-flask-restplus-swagger)
 [![Codecov](https://img.shields.io/codecov/c/github/nyu-devops/lab-flask-restplus-swagger.svg)]()
 
