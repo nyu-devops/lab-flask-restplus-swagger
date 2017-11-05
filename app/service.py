@@ -162,9 +162,8 @@ class PetResource(Resource):
 #  PATH: /pets
 ######################################################################
 @ns.route('/', strict_slashes=False)
-class PetList(Resource):
-    """ Shows a list of all pets, and lets you POST to add new pets """
-
+class PetCollection(Resource):
+    """ Handles all interactions with collections of Pets """
     #------------------------------------------------------------------
     # LIST ALL PETS
     #------------------------------------------------------------------
