@@ -69,11 +69,13 @@ class Pet(object):
             raise DataValidationError('name attribute is not set')
         if self.id == 0:
             self.id = Pet.__next_index()
-        Pet.redis.set(self.id, pickle.dumps(self.serialize()))
+        Pet.redis.set(Pet.key(self.id), pickle.dumps(self.serialize()))
+        self.add_to_category()
 
     def delete(self):
         """ Deletes a Pet from the database """
-        Pet.redis.delete(self.id)
+        Pet.redis.delete(Pet.key(self.id))
+        self.remove_from_category()
 
     def serialize(self):
         """ serializes a Pet into a dictionary """
@@ -94,6 +96,17 @@ class Pet(object):
             raise DataValidationError('Invalid pet data: ' + str(Pet.__validator.errors))
         return self
 
+######################################################################
+#  R E L A T I O N S H I P S
+######################################################################
+
+    def add_to_category(self):
+        """ Adds the Pets Redis key to a Category set """
+        Pet.redis.sadd('category:{}'.format(self.category), Pet.key(self.id))
+
+    def remove_from_category(self):
+        """ Removes the Pets Redis key from a Category set """
+        Pet.redis.srem('category:{}'.format(self.category), Pet.key(self.id))
 
 ######################################################################
 #  S T A T I C   D A T A B S E   M E T H O D S
@@ -102,7 +115,12 @@ class Pet(object):
     @staticmethod
     def __next_index():
         """ Increments the index and returns it """
-        return Pet.redis.incr('index')
+        return Pet.redis.incr(Pet.__name__.lower() + '-index')
+
+    @staticmethod
+    def key(value):
+        """ Creates a Redis key using class name and value """
+        return '{}:{}'.format(Pet.__name__.lower(), value)
 
     @staticmethod
     def remove_all():
@@ -114,11 +132,10 @@ class Pet(object):
         """ Query that returns all Pets """
         # results = [Pet.from_dict(redis.hgetall(key)) for key in redis.keys() if key != 'index']
         results = []
-        for key in Pet.redis.keys():
-            if key != 'index':  # filer out our id index
-                data = pickle.loads(Pet.redis.get(key))
-                pet = Pet(data['id']).deserialize(data)
-                results.append(pet)
+        for key in Pet.redis.keys(Pet.key('*')):
+            data = pickle.loads(Pet.redis.get(key))
+            pet = Pet(data['id']).deserialize(data)
+            results.append(pet)
         return results
 
 ######################################################################
@@ -128,48 +145,22 @@ class Pet(object):
     @staticmethod
     def find(pet_id):
         """ Query that finds Pets by their id """
-        if Pet.redis.exists(pet_id):
-            data = pickle.loads(Pet.redis.get(pet_id))
+        key = Pet.key(pet_id)
+        if Pet.redis.exists(key):
+            data = pickle.loads(Pet.redis.get(key))
             pet = Pet(data['id']).deserialize(data)
             return pet
         return None
 
     @staticmethod
-    def __find_by(attribute, value):
-        """ Generic Query that finds a key with a specific value """
-        # return [pet for pet in Pet.__data if pet.category == category]
-        Pet.logger.info('Processing %s query for %s', attribute, value)
-        if isinstance(value, str):
-            search_criteria = value.lower() # make case insensitive
-        else:
-            search_criteria = value
-        results = []
-        for key in Pet.redis.keys():
-            if key != 'index':  # filer out our id index
-                data = pickle.loads(Pet.redis.get(key))
-                # perform case insensitive search on strings
-                if isinstance(data[attribute], str):
-                    test_value = data[attribute].lower()
-                else:
-                    test_value = data[attribute]
-                if test_value == search_criteria:
-                    results.append(Pet(data['id']).deserialize(data))
-        return results
-
-    @staticmethod
-    def find_by_name(name):
-        """ Query that finds Pets by their name """
-        return Pet.__find_by('name', name)
-
-    @staticmethod
     def find_by_category(category):
         """ Query that finds Pets by their category """
-        return Pet.__find_by('category', category)
-
-    @staticmethod
-    def find_by_availability(available=True):
-        """ Query that finds Pets by their availability """
-        return Pet.__find_by('available', available)
+        Pet.logger.info('Processing category query for %s ...', category)
+        results = []
+        for key in Pet.redis.smembers('category:' + category):
+            data = pickle.loads(Pet.redis.get(key))
+            results.append(Pet(data['id']).deserialize(data))
+        return results
 
 ######################################################################
 #  R E D I S   D A T A B A S E   C O N N E C T I O N   M E T H O D S

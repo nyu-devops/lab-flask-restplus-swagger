@@ -164,15 +164,6 @@ class TestPets(unittest.TestCase):
         pet = Pet.find(2)
         self.assertIs(pet, None)
 
-    def test_find_by_name(self):
-        """ Find a Pet by Name """
-        Pet(0, "fido", "dog").save()
-        Pet(0, "kitty", "cat").save()
-        pets = Pet.find_by_name("fido")
-        self.assertNotEqual(len(pets), 0)
-        self.assertEqual(pets[0].category, "dog")
-        self.assertEqual(pets[0].name, "fido")
-
     def test_find_by_category(self):
         """ Find a Pet by Category """
         Pet(0, "fido", "dog").save()
@@ -181,25 +172,6 @@ class TestPets(unittest.TestCase):
         self.assertNotEqual(len(pets), 0)
         self.assertEqual(pets[0].category, "cat")
         self.assertEqual(pets[0].name, "kitty")
-
-    def test_find_by_availability(self):
-        """ Find a Pet by Availability """
-        Pet(0, "fido", "dog", False).save()
-        Pet(0, "kitty", "cat", True).save()
-        pets = Pet.find_by_availability(True)
-        self.assertEqual(len(pets), 1)
-        self.assertEqual(pets[0].name, "kitty")
-
-    def test_for_case_insensitive(self):
-        """ Test for Case Insensitive Search """
-        Pet(0, "Fido", "DOG").save()
-        Pet(0, "Kitty", "CAT").save()
-        pets = Pet.find_by_name("fido")
-        self.assertNotEqual(len(pets), 0)
-        self.assertEqual(pets[0].name, "Fido")
-        pets = Pet.find_by_category("cat")
-        self.assertNotEqual(len(pets), 0)
-        self.assertEqual(pets[0].category, "CAT")
 
     def test_passing_connection(self):
         """ Pass in the Redis connection """

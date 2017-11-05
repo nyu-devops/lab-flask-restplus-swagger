@@ -7,7 +7,7 @@
 
 ## Introduction
 
-When developing microservices with API's that others are going to call, it is critically important to provide the proper API documentation. OpenAPI has become a standard for documenting APIs and Swagger is an implementation of this. This lab shows you how to use a Flask plug-in called **Flask-RESTPlus** to imbed Swagger documentatio into your Python Flask microservice so that the Swagger docs are generated for you.
+When developing microservices with API's that others are going to call, it is critically important to provide the proper API documentation. OpenAPI has become a standard for documenting APIs and Swagger is an implementation of this. This lab shows you how to use a Flask plug-in called **Flask-RESTPlus** to imbed Swagger documentation into your Python Flask microservice so that the Swagger docs are generated for you.
 
 I feel that it is much better to include the documentation with the code because programmers are more likely to update the docs if it's right there above the code they are working on. (...at least that's the therory and I'm sticking to it) ;-)
 
@@ -90,7 +90,7 @@ If the VM is no longer needed you can remove it with:
 
 ## What's featured in the project?
 
-    * app/service.py -- the main Service using Python Flask and Swagger
+    * app/service.py -- the main Service using Python Flask-RESTPlus for Swagger
     * app/models.py -- a Pet model that uses Redis for persistence
     * tests/test_server.py -- test cases using unittest for the microservice
     * tests/test_pets.py -- test cases using unittest for the Pet model

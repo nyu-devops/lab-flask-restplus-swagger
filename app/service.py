@@ -170,18 +170,14 @@ class PetList(Resource):
     #------------------------------------------------------------------
     @ns.doc('list_pets')
     @ns.param('category', 'List Pets by category')
-    @ns.param('name', 'List Pets by name')
     @ns.marshal_list_with(pet_model)
     def get(self):
         """ Returns all of the Pets """
         app.logger.info('Request to list Pets...')
         pets = []
         category = request.args.get('category')
-        name = request.args.get('name')
         if category:
             pets = Pet.find_by_category(category)
-        elif name:
-            pets = Pet.find_by_name(name)
         else:
             pets = Pet.all()
 
