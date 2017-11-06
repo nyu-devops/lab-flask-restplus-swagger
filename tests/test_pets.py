@@ -23,9 +23,9 @@ import os
 import json
 import unittest
 from mock import patch
-from redis import Redis, ConnectionError
+from redis import Redis
 from werkzeug.exceptions import NotFound
-from app.models import Pet, DataValidationError
+from app.models import Pet, DataValidationError, DatabaseConnectionError
 from app import service  # to get Redis
 
 VCAP_SERVICES = {
@@ -180,7 +180,7 @@ class TestPets(unittest.TestCase):
 
     def test_passing_bad_connection(self):
         """ Pass in a bad Redis connection """
-        self.assertRaises(ConnectionError, Pet.init_db, Redis(host='127.0.0.1', port=6300))
+        self.assertRaises(DatabaseConnectionError, Pet.init_db, Redis(host='127.0.0.1', port=6300))
         self.assertIsNone(Pet.redis)
 
     @patch.dict(os.environ, {'VCAP_SERVICES': json.dumps(VCAP_SERVICES)})
@@ -192,8 +192,8 @@ class TestPets(unittest.TestCase):
     @patch('redis.Redis.ping')
     def test_redis_connection_error(self, ping_error_mock):
         """ Test a Bad Redis connection """
-        ping_error_mock.side_effect = ConnectionError()
-        self.assertRaises(ConnectionError, Pet.init_db)
+        ping_error_mock.side_effect = DatabaseConnectionError()
+        self.assertRaises(DatabaseConnectionError, Pet.init_db)
         self.assertIsNone(Pet.redis)
 
 

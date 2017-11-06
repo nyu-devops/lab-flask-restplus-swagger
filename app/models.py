@@ -38,6 +38,9 @@ from redis.exceptions import ConnectionError
 class DataValidationError(ValueError):
     pass
 
+class DatabaseConnectionError(ConnectionError):
+    pass
+
 ######################################################################
 # Pet Model for database
 #   This class must be initialized with use_db(redis) before using
@@ -192,7 +195,7 @@ class Pet(object):
 
         Exception:
         ----------
-          redis.ConnectionError - if ping() test fails
+          DatabaseConnectionError - if ping() test fails
         """
         if redis:
             Pet.logger.info("Using client connection...")
@@ -203,7 +206,7 @@ class Pet(object):
             except ConnectionError:
                 Pet.logger.error("Client Connection Error!")
                 Pet.redis = None
-                raise ConnectionError('Could not connect to the Redis Service')
+                raise DatabaseConnectionError('Could not connect to the clients Redis Service')
             return
         # Get the credentials from the Bluemix environment
         if 'VCAP_SERVICES' in os.environ:
@@ -223,4 +226,4 @@ class Pet(object):
         if not Pet.redis:
             # if you end up here, redis instance is down.
             Pet.logger.fatal('*** FATAL ERROR: Could not connect to the Redis Service')
-            raise ConnectionError('Could not connect to the Redis Service')
+            raise DatabaseConnectionError('Could not connect to the Redis Service')

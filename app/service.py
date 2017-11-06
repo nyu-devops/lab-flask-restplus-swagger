@@ -33,7 +33,7 @@ from flask import jsonify, request, json, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
 from flask_restplus import Api, Resource, fields
 from werkzeug.exceptions import NotFound
-from app.models import Pet, DataValidationError
+from app.models import Pet, DataValidationError, DatabaseConnectionError
 from . import app
 
 ######################################################################
@@ -69,6 +69,13 @@ def request_validation_error(error):
     message = error.message or str(error)
     app.logger.info(message)
     return {'status':400, 'error': 'Bad Request', 'message': message}, 400
+
+@api.errorhandler(DatabaseConnectionError)
+def database_connection_error(error):
+    """ Handles Database Errors from connection attempts """
+    message = error.message or str(error)
+    app.logger.critical(message)
+    return {'status':500, 'error': 'Server Error', 'message': message}, 500
 
 ######################################################################
 # GET HEALTH CHECK
