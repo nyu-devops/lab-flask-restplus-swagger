@@ -43,6 +43,7 @@ api = Api(app,
           version='1.0.0',
           title='Pet Demo REST API Service',
           description='This is a sample server Pet store server.',
+          doc='/apidocs/'
          )
 
 # This namespace is the start of the path i.e., /pets
