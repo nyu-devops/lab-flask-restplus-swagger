@@ -44,6 +44,7 @@ api = Api(app,
           title='Pet Demo REST API Service',
           description='This is a sample server Pet store server.',
           doc='/apidocs/'
+          # prefix='/api'
          )
 
 # This namespace is the start of the path i.e., /pets
@@ -85,6 +86,17 @@ def database_connection_error(error):
 def healthcheck():
     """ Let them know our heart is still beating """
     return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
+
+
+######################################################################
+# GET INDEX
+######################################################################
+@app.route('/', methods=['GET'])
+def index():
+    """ Send back a greeting """
+    return make_response(jsonify(name='Pet Demo REST API Service',
+                                 doc=url_for('doc', _external=True)
+                                ), status.HTTP_200_OK)
 
 
 ######################################################################

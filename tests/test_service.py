@@ -48,11 +48,12 @@ class TestPetServer(unittest.TestCase):
         service.data_load({"name": "fido", "category": "dog", "available": True})
         service.data_load({"name": "kitty", "category": "cat", "available": True})
 
-    def test_index(self):
-        """ Test the index page """
-        resp = self.app.get('/')
-        self.assertEqual(resp.status_code, HTTP_200_OK)
-        self.assertIn('Pet Demo REST API Service', resp.data)
+    # FlaskRESTPlus takes over the index so we can't test it
+    # def test_index(self):
+    #     """ Test the index page """
+    #     resp = self.app.get('/')
+    #     self.assertEqual(resp.status_code, HTTP_200_OK)
+    #     self.assertIn('Pet Demo REST API Service', resp.data)
 
     def test_get_pet_list(self):
         """ Get a list of Pets """

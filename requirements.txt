@@ -3,6 +3,7 @@ Flask-API==1.0
 flask-restplus==0.10.1
 redis==2.10.6
 Cerberus==1.1
+honcho==1.0.1
 # Testing
 pylint>=1.7
 mock==2.0.0
