@@ -29,7 +29,7 @@ DELETE /pets/{id} - deletes a Pet record in the database
 
 import sys
 import logging
-from flask import jsonify, request, json, url_for, make_response, abort
+from flask import jsonify, request, url_for, make_response
 from flask_api import status    # HTTP Status Codes
 from flask_restplus import Api, Resource, fields
 from app.models import Pet, DataValidationError, DatabaseConnectionError
@@ -42,12 +42,13 @@ api = Api(app,
           version='1.0.0',
           title='Pet Demo REST API Service',
           description='This is a sample server Pet store server.',
-          doc='/apidocs/'
+          default='pets',
+          default_label='Pet shop operations',
+          default_mediatype='application/json',
+          doc='/'
+          # doc='/apidocs/'
           # prefix='/api'
          )
-
-# This namespace is the start of the path i.e., /pets
-ns = api.namespace('pets', description='Pet operations')
 
 # Define the model so that the docs reflect what can be sent
 pet_model = api.model('Pet', {
@@ -88,21 +89,10 @@ def healthcheck():
 
 
 ######################################################################
-# GET INDEX
-######################################################################
-@app.route('/', methods=['GET'])
-def index():
-    """ Send back a greeting """
-    return make_response(jsonify(name='Pet Demo REST API Service',
-                                 doc=url_for('doc', _external=True)
-                                ), status.HTTP_200_OK)
-
-
-######################################################################
 #  PATH: /pets/{id}
 ######################################################################
-@ns.route('/<int:pet_id>')
-@ns.param('pet_id', 'The Pet identifier')
+@api.route('/pets/<int:pet_id>')
+@api.param('pet_id', 'The Pet identifier')
 class PetResource(Resource):
     """
     PetResource class
@@ -116,9 +106,9 @@ class PetResource(Resource):
     #------------------------------------------------------------------
     # RETRIEVE A PET
     #------------------------------------------------------------------
-    @ns.doc('get_pets')
-    @ns.response(404, 'Pet not found')
-    @ns.marshal_with(pet_model)
+    @api.doc('get_pets')
+    @api.response(404, 'Pet not found')
+    @api.marshal_with(pet_model)
     def get(self, pet_id):
         """
         Retrieve a single Pet
@@ -128,17 +118,17 @@ class PetResource(Resource):
         app.logger.info("Request to Retrieve a pet with id [%s]", pet_id)
         pet = Pet.find(pet_id)
         if not pet:
-            abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
+            api.abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
         return pet.serialize(), status.HTTP_200_OK
 
     #------------------------------------------------------------------
     # UPDATE AN EXISTING PET
     #------------------------------------------------------------------
-    @ns.doc('update_pets')
-    @ns.response(404, 'Pet not found')
-    @ns.response(400, 'The posted Pet data was not valid')
-    @ns.expect(pet_model)
-    @ns.marshal_with(pet_model)
+    @api.doc('update_pets')
+    @api.response(404, 'Pet not found')
+    @api.response(400, 'The posted Pet data was not valid')
+    @api.expect(pet_model)
+    @api.marshal_with(pet_model)
     def put(self, pet_id):
         """
         Update a Pet
@@ -149,9 +139,7 @@ class PetResource(Resource):
         check_content_type('application/json')
         pet = Pet.find(pet_id)
         if not pet:
-            #api.abort(404, "Pet with id '{}' was not found.".format(pet_id))
-            abort(status.HTTP_404_NOT_FOUND, 'Pet with id [{}] was not found.'.format(pet_id))
-        #data = request.get_json()
+            api.abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
         data = api.payload
         app.logger.info(data)
         pet.deserialize(data)
@@ -162,8 +150,8 @@ class PetResource(Resource):
     #------------------------------------------------------------------
     # DELETE A PET
     #------------------------------------------------------------------
-    @ns.doc('delete_pets')
-    @ns.response(204, 'Pet deleted')
+    @api.doc('delete_pets')
+    @api.response(204, 'Pet deleted')
     def delete(self, pet_id):
         """
         Delete a Pet
@@ -180,15 +168,15 @@ class PetResource(Resource):
 ######################################################################
 #  PATH: /pets
 ######################################################################
-@ns.route('/', strict_slashes=False)
+@api.route('/pets', strict_slashes=False)
 class PetCollection(Resource):
     """ Handles all interactions with collections of Pets """
     #------------------------------------------------------------------
     # LIST ALL PETS
     #------------------------------------------------------------------
-    @ns.doc('list_pets')
-    @ns.param('category', 'List Pets by category')
-    @ns.marshal_list_with(pet_model)
+    @api.doc('list_pets')
+    @api.param('category', 'List Pets by category')
+    @api.marshal_list_with(pet_model)
     def get(self):
         """ Returns all of the Pets """
         app.logger.info('Request to list Pets...')
@@ -206,11 +194,11 @@ class PetCollection(Resource):
     #------------------------------------------------------------------
     # ADD A NEW PET
     #------------------------------------------------------------------
-    @ns.doc('create_pets')
-    @ns.expect(pet_model)
-    @ns.response(400, 'The posted data was not valid')
-    @ns.response(201, 'Pet created successfully')
-    @ns.marshal_with(pet_model, code=201)
+    @api.doc('create_pets')
+    @api.expect(pet_model)
+    @api.response(400, 'The posted data was not valid')
+    @api.response(201, 'Pet created successfully')
+    @api.marshal_with(pet_model, code=201)
     def post(self):
         """
         Creates a Pet
@@ -230,13 +218,13 @@ class PetCollection(Resource):
 ######################################################################
 #  PATH: /pets/{id}/purchase
 ######################################################################
-@ns.route('/<int:pet_id>/purchase')
-@ns.param('pet_id', 'The Pet identifier')
+@api.route('/pets/<int:pet_id>/purchase')
+@api.param('pet_id', 'The Pet identifier')
 class PurchaseResource(Resource):
     """ Purchase actions on a Pet """
-    @ns.doc('purchase_pets')
-    @ns.response(404, 'Pet not found')
-    @ns.response(409, 'The Pet is not available for purchase')
+    @api.doc('purchase_pets')
+    @api.response(404, 'Pet not found')
+    @api.response(409, 'The Pet is not available for purchase')
     def put(self, pet_id):
         """
         Purchase a Pet
@@ -246,9 +234,9 @@ class PurchaseResource(Resource):
         app.logger.info('Request to Purchase a Pet')
         pet = Pet.find(pet_id)
         if not pet:
-            abort(status.HTTP_404_NOT_FOUND, 'Pet with id [{}] was not found.'.format(pet_id))
+            api.abort(status.HTTP_404_NOT_FOUND, 'Pet with id [{}] was not found.'.format(pet_id))
         if not pet.available:
-            abort(status.HTTP_409_CONFLICT, 'Pet with id [{}] is not available.'.format(pet_id))
+            api.abort(status.HTTP_409_CONFLICT, 'Pet with id [{}] is not available.'.format(pet_id))
         pet.available = False
         pet.save()
         app.logger.info('Pet with id [%s] has been purchased!', pet.id)
@@ -288,7 +276,7 @@ def check_content_type(content_type):
     if request.headers['Content-Type'] == content_type:
         return
     app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
+    api.abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
 
 #@app.before_first_request
 def initialize_logging(log_level=logging.INFO):
