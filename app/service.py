@@ -44,9 +44,7 @@ api = Api(app,
           description='This is a sample server Pet store server.',
           default='pets',
           default_label='Pet shop operations',
-          default_mediatype='application/json',
-          doc='/'
-          # doc='/apidocs/'
+          doc='/' # default also could use doc='/apidocs/'
           # prefix='/api'
          )
 
@@ -70,14 +68,22 @@ def request_validation_error(error):
     """ Handles Value Errors from bad data """
     message = error.message or str(error)
     app.logger.info(message)
-    return {'status':400, 'error': 'Bad Request', 'message': message}, 400
+    return {
+        'status_code': status.HTTP_400_BAD_REQUEST,
+        'error': 'Bad Request',
+        'message': message
+    }, status.HTTP_400_BAD_REQUEST
 
 @api.errorhandler(DatabaseConnectionError)
 def database_connection_error(error):
     """ Handles Database Errors from connection attempts """
     message = error.message or str(error)
     app.logger.critical(message)
-    return {'status':500, 'error': 'Server Error', 'message': message}, 500
+    return {
+        'status_code': status.HTTP_503_SERVICE_UNAVAILABLE,
+        'error': 'Service Unavailable',
+        'message': message
+    }, status.HTTP_503_SERVICE_UNAVAILABLE
 
 ######################################################################
 # GET HEALTH CHECK
@@ -259,7 +265,10 @@ def pets_reset():
 @app.before_first_request
 def init_db(redis=None):
     """ Initlaize the model """
-    Pet.init_db(redis)
+    try:
+        Pet.init_db(redis)
+    except DatabaseConnectionError as error:
+        api.handle_error(error)
 
 # load sample data
 def data_load(payload):
@@ -276,4 +285,5 @@ def check_content_type(content_type):
     if request.headers['Content-Type'] == content_type:
         return
     app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    api.abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
+    api.abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+              'Content-Type must be {}'.format(content_type))
