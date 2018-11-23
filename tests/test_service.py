@@ -42,7 +42,6 @@ class TestPetServer(unittest.TestCase):
 
     def setUp(self):
         self.app = service.app.test_client()
-        service.initialize_logging(logging.CRITICAL)
         service.init_db()
         service.data_reset()
         service.data_load({"name": "fido", "category": "dog", "available": True})
