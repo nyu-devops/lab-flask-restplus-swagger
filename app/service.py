@@ -32,7 +32,6 @@ import logging
 from flask import jsonify, request, json, url_for, make_response, abort
 from flask_api import status    # HTTP Status Codes
 from flask_restplus import Api, Resource, fields
-from werkzeug.exceptions import NotFound
 from app.models import Pet, DataValidationError, DatabaseConnectionError
 from . import app
 
@@ -129,7 +128,7 @@ class PetResource(Resource):
         app.logger.info("Request to Retrieve a pet with id [%s]", pet_id)
         pet = Pet.find(pet_id)
         if not pet:
-            raise NotFound("Pet with id '{}' was not found.".format(pet_id))
+            abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
         return pet.serialize(), status.HTTP_200_OK
 
     #------------------------------------------------------------------
@@ -151,7 +150,7 @@ class PetResource(Resource):
         pet = Pet.find(pet_id)
         if not pet:
             #api.abort(404, "Pet with id '{}' was not found.".format(pet_id))
-            raise NotFound('Pet with id [{}] was not found.'.format(pet_id))
+            abort(status.HTTP_404_NOT_FOUND, 'Pet with id [{}] was not found.'.format(pet_id))
         #data = request.get_json()
         data = api.payload
         app.logger.info(data)
