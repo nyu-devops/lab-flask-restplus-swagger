@@ -31,7 +31,7 @@ import sys
 import logging
 from flask import jsonify, request, url_for, make_response
 from flask_api import status    # HTTP Status Codes
-from flask_restplus import Api, Resource, fields
+from flask_restplus import Api, Resource, fields, reqparse
 from app.models import Pet, DataValidationError, DatabaseConnectionError
 from . import app
 
@@ -59,6 +59,10 @@ pet_model = api.model('Pet', {
     'available': fields.Boolean(required=True,
                                 description='Is the Pet avaialble for purchase?')
 })
+
+# query string arguments
+pet_args = reqparse.RequestParser()
+pet_args.add_argument('category', type=str, required=False, help='List Pets by category')
 
 ######################################################################
 # Special Error Handlers
@@ -181,13 +185,15 @@ class PetCollection(Resource):
     # LIST ALL PETS
     #------------------------------------------------------------------
     @api.doc('list_pets')
-    @api.param('category', 'List Pets by category')
+    #@api.param('category', 'List Pets by category')
+    @api.expect(pet_args, validate=True)
     @api.marshal_list_with(pet_model)
     def get(self):
         """ Returns all of the Pets """
         app.logger.info('Request to list Pets...')
         pets = []
-        category = request.args.get('category')
+        args = pet_args.parse_args()
+        category = args['category']
         if category:
             pets = Pet.find_by_category(category)
         else:
