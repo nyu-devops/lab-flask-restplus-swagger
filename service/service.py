@@ -31,8 +31,8 @@ import sys
 import logging
 from flask import jsonify, request, url_for, make_response
 from flask_api import status    # HTTP Status Codes
-from flask_restplus import Api, Resource, fields, reqparse
-from app.models import Pet, DataValidationError, DatabaseConnectionError
+from flask_restplus import Api, Resource, fields, reqparse, inputs
+from service.models import Pet, DataValidationError, DatabaseConnectionError
 from . import app
 
 ######################################################################
@@ -50,7 +50,7 @@ api = Api(app,
 
 # Define the model so that the docs reflect what can be sent
 pet_model = api.model('Pet', {
-    'id': fields.Integer(readOnly=True,
+    '_id': fields.String(readOnly=True,
                          description='The unique id assigned internally by service'),
     'name': fields.String(required=True,
                           description='The name of the Pet'),
@@ -62,7 +62,9 @@ pet_model = api.model('Pet', {
 
 # query string arguments
 pet_args = reqparse.RequestParser()
+pet_args.add_argument('name', type=str, required=False, help='List Pets by name')
 pet_args.add_argument('category', type=str, required=False, help='List Pets by category')
+pet_args.add_argument('available', type=inputs.boolean, required=False, help='List Pets by availability')
 
 ######################################################################
 # Special Error Handlers
@@ -70,8 +72,8 @@ pet_args.add_argument('category', type=str, required=False, help='List Pets by c
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
-    message = error.message or str(error)
-    app.logger.info(message)
+    message = str(error)
+    app.logger.error(message)
     return {
         'status_code': status.HTTP_400_BAD_REQUEST,
         'error': 'Bad Request',
@@ -81,7 +83,7 @@ def request_validation_error(error):
 @api.errorhandler(DatabaseConnectionError)
 def database_connection_error(error):
     """ Handles Database Errors from connection attempts """
-    message = error.message or str(error)
+    message = str(error)
     app.logger.critical(message)
     return {
         'status_code': status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -101,7 +103,7 @@ def healthcheck():
 ######################################################################
 #  PATH: /pets/{id}
 ######################################################################
-@api.route('/pets/<int:pet_id>')
+@api.route('/pets/<pet_id>')
 @api.param('pet_id', 'The Pet identifier')
 class PetResource(Resource):
     """
@@ -146,7 +148,6 @@ class PetResource(Resource):
         This endpoint will update a Pet based the body that is posted
         """
         app.logger.info('Request to Update a pet with id [%s]', pet_id)
-        check_content_type('application/json')
         pet = Pet.find(pet_id)
         if not pet:
             api.abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
@@ -193,15 +194,22 @@ class PetCollection(Resource):
         app.logger.info('Request to list Pets...')
         pets = []
         args = pet_args.parse_args()
-        category = args['category']
-        if category:
-            pets = Pet.find_by_category(category)
+        if args['category']:
+            app.logger.info('Filtering by category: %s', args['category'])
+            pets = Pet.find_by_category(args['category'])
+        elif args['name']:
+            app.logger.info('Filtering by name: %s', args['name'])
+            pets = Pet.find_by_name(args['name'])
+        elif args['available'] is not None:
+            app.logger.info('Filtering by availability: %s', args['available'])
+            pets = Pet.find_by_availability(args['available'])
         else:
             pets = Pet.all()
 
         app.logger.info('[%s] Pets returned', len(pets))
         results = [pet.serialize() for pet in pets]
         return results, status.HTTP_200_OK
+
 
     #------------------------------------------------------------------
     # ADD A NEW PET
@@ -217,7 +225,6 @@ class PetCollection(Resource):
         This endpoint will create a Pet based the data in the body that is posted
         """
         app.logger.info('Request to Create a Pet')
-        check_content_type('application/json')
         pet = Pet()
         app.logger.info('Payload = %s', api.payload)
         pet.deserialize(api.payload)
@@ -230,7 +237,7 @@ class PetCollection(Resource):
 ######################################################################
 #  PATH: /pets/{id}/purchase
 ######################################################################
-@api.route('/pets/<int:pet_id>/purchase')
+@api.route('/pets/<pet_id>/purchase')
 @api.param('pet_id', 'The Pet identifier')
 class PurchaseResource(Resource):
     """ Purchase actions on a Pet """
@@ -269,27 +276,16 @@ def pets_reset():
 ######################################################################
 
 @app.before_first_request
-def init_db(redis=None):
+def init_db(dbname="pets"):
     """ Initlaize the model """
-    try:
-        Pet.init_db(redis)
-    except DatabaseConnectionError as error:
-        api.handle_error(error)
+    Pet.init_db(dbname)
 
 # load sample data
 def data_load(payload):
     """ Loads a Pet into the database """
-    pet = Pet(0, payload['name'], payload['category'])
+    pet = Pet(payload['name'], payload['category'], payload['available'])
     pet.save()
 
 def data_reset():
     """ Removes all Pets from the database """
     Pet.remove_all()
-
-def check_content_type(content_type):
-    """ Checks that the media type is correct """
-    if request.headers['Content-Type'] == content_type:
-        return
-    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    api.abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-              'Content-Type must be {}'.format(content_type))
