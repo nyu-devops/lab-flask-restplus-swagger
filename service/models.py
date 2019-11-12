@@ -80,6 +80,7 @@ class Pet(object):
         if self.name is None:   # name is the only required field
             raise DataValidationError('name attribute is not set')
 
+        self.id = None
         try:
             document = self.database.create_document(self.serialize())
         except HTTPError as err:

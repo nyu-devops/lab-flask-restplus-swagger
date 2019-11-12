@@ -60,6 +60,15 @@ pet_model = api.model('Pet', {
                                 description='Is the Pet avaialble for purchase?')
 })
 
+create_model = api.model('Pet', {
+    'name': fields.String(required=True,
+                          description='The name of the Pet'),
+    'category': fields.String(required=True,
+                              description='The category of Pet (e.g., dog, cat, fish, etc.)'),
+    'available': fields.Boolean(required=True,
+                                description='Is the Pet avaialble for purchase?')
+})
+
 # query string arguments
 pet_args = reqparse.RequestParser()
 pet_args.add_argument('name', type=str, required=False, help='List Pets by name')
@@ -151,8 +160,8 @@ class PetResource(Resource):
         pet = Pet.find(pet_id)
         if not pet:
             api.abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
+        app.logger.debug('Payload = %s', api.payload)
         data = api.payload
-        app.logger.info(data)
         pet.deserialize(data)
         pet.id = pet_id
         pet.save()
@@ -186,7 +195,6 @@ class PetCollection(Resource):
     # LIST ALL PETS
     #------------------------------------------------------------------
     @api.doc('list_pets')
-    #@api.param('category', 'List Pets by category')
     @api.expect(pet_args, validate=True)
     @api.marshal_list_with(pet_model)
     def get(self):
@@ -215,7 +223,7 @@ class PetCollection(Resource):
     # ADD A NEW PET
     #------------------------------------------------------------------
     @api.doc('create_pets')
-    @api.expect(pet_model)
+    @api.expect(create_model)
     @api.response(400, 'The posted data was not valid')
     @api.response(201, 'Pet created successfully')
     @api.marshal_with(pet_model, code=201)
@@ -226,9 +234,9 @@ class PetCollection(Resource):
         """
         app.logger.info('Request to Create a Pet')
         pet = Pet()
-        app.logger.info('Payload = %s', api.payload)
+        app.logger.debug('Payload = %s', api.payload)
         pet.deserialize(api.payload)
-        pet.save()
+        pet.create()
         app.logger.info('Pet with new id [%s] saved!', pet.id)
         location_url = api.url_for(PetResource, pet_id=pet.id, _external=True)
         return pet.serialize(), status.HTTP_201_CREATED, {'Location': location_url}

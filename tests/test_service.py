@@ -49,12 +49,11 @@ class TestPetServer(unittest.TestCase):
         service.data_load({"name": "kitty", "category": "cat", "available": True})
         service.data_load({"name": "happy", "category": "hippo", "available": False})
 
-    # FlaskRESTPlus takes over the index so we can't test it
-    # def test_index(self):
-    #     """ Test the index page """
-    #     resp = self.app.get('/')
-    #     self.assertEqual(resp.status_code, HTTP_200_OK)
-    #     self.assertIn('Pet Demo REST API Service', resp.data)
+    def test_index(self):
+        """ Test the index page """
+        resp = self.app.get('/')
+        self.assertEqual(resp.status_code, HTTP_200_OK)
+        # self.assertIn('Pet Demo REST API Service', resp.data)
 
     def test_get_pet_list(self):
         """ Get a list of Pets """
@@ -103,6 +102,16 @@ class TestPetServer(unittest.TestCase):
         self.assertEqual(resp.status_code, HTTP_200_OK)
         self.assertEqual(len(data), pet_count + 1)
         self.assertIn(new_json, data)
+
+    def test_create_pet_with_id(self):
+        """ Create a new Pet with an id """
+        new_pet = {'_id': 'foo', 'name': 'sammy', 'category': 'snake', 'available': True}
+        resp = self.app.post('/pets', json=new_pet, content_type='application/json')
+        self.assertEqual(resp.status_code, HTTP_201_CREATED)
+        data = resp.get_json()
+        logging.debug('data = %s', data)
+        self.assertEqual(data['name'], 'sammy')
+        self.assertNotEqual(data['_id'], 'foo')
 
     def test_update_pet(self):
         """ Update a Pet """

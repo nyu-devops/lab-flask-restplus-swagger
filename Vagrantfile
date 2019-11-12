@@ -3,7 +3,8 @@
 
 Vagrant.configure(2) do |config|
   # Updated to use Xenial 64 16.04
-  config.vm.box = "ubuntu/xenial64"
+  config.vm.box = "ubuntu/bionic64"
+  config.vm.hostname = "swagger"
 
   # set up network ip and port forwarding
   config.vm.network "forwarded_port", guest: 5000, host: 5000, host_ip: "127.0.0.1"
@@ -15,7 +16,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provider "virtualbox" do |vb|
     # Customize the amount of memory on the VM:
-    vb.memory = "512"
+    vb.memory = "1024"
     vb.cpus = 1
     # Fixes some DNS issues on some networks
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -38,25 +39,25 @@ Vagrant.configure(2) do |config|
   end
 
   ######################################################################
-  # Setup a Python development environment
+  # Setup a Python 3 development environment
   ######################################################################
   config.vm.provision "shell", inline: <<-SHELL
-    #apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y
     apt-get update
-    apt-get install -y wget git zip tree python-pip python-dev
+    apt-get install -y git zip tree python3 python3-pip python3-venv
     apt-get -y autoremove
     # Install app dependencies
     cd /vagrant
-    sudo pip install -r requirements.txt
+    pip3 install -r requirements.txt
   SHELL
 
   ######################################################################
-  # Add Redis docker container
+  # Add CouchDB docker container
   ######################################################################
+  # docker run -d --name couchdb -p 5984:5984 -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=pass -v couchdb-data:/opt/couchdb/data couchdb
   config.vm.provision "docker" do |d|
-    d.pull_images "redis:alpine"
-    d.run "redis:alpine",
-      args: "--restart=always -d --name redis -h redis -p 6379:6379 -v redis_data:/data"
+    d.pull_images "couchdb"
+    d.run "couchdb",
+      args: "--restart=always -d --name couchdb -p 5984:5984 -v couchdb:/opt/couchdb/data -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=pass"
   end
 
 end
