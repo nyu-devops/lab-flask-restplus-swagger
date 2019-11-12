@@ -29,42 +29,6 @@ Then all you have to do is clone this repo and invoke vagrant:
     cd /vagrant
 ```
 
-## Prerequisite Installation using Virtualenv
-
-Since this lab has no database (it's just an in memory array) you can use **Virtualenv** to setup your Python environment instead of **Vagrant**.
-
-**Note:** _If you are using a Mac, this will work right out-of-the-box becasue the Mac has everything you need to do software development right from Apple. If you are using Windows, you will need to install [Python 2.7](https://www.python.org/downloads/release/python-2712/) and `pip` first becasue Windows does not ship with any development tools. :( I strongly recommend that Windows users use the Vagrant approach above._
-
-To use `virtualenv` follow these commands:
-
-If you don't already have `virtualenv` you must install it at least once:
-
-```shell
-    pip install virtualenv
-```
-
-To create a virtual environment to run the code use the following:
-
-```shell
-    git clone https://github.com/nyu-devops/lab-flask-restplus-swagger.git
-    cd lab-flask-restplus-swagger
-    virtualenv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-```
-
-That will install all of the required Python packages using `pip` into a virtual environment that isolates any library conflicts.
-
-You can deactivate the virtual environment at any time with the command:
-
-    deactivate
-
-To `activate` the virtual envirnment again just change into the directory and use:
-
-    source venv/bin/activate
-
-If you ever run the server or the tests and you are getting an error that packages are not found, check to make sure that you have activated the virtual environment.
-
 ## Running the code
 
 You can now run `nosetests` to run the tests and make sure that everything works as expected.
@@ -74,7 +38,7 @@ You can now run `nosetests` to run the tests and make sure that everything works
 
 You can then run the server with:
 
-    python run.py
+    honcho start
 
 Finally you can see the microservice Swagger docs at: [http://localhost:5000/](http://localhost:5000/)
 
@@ -90,7 +54,7 @@ If the VM is no longer needed you can remove it with:
 
 ## What's featured in the project?
 
-    * app/service.py -- the main Service using Python Flask-RESTPlus for Swagger
-    * app/models.py -- a Pet model that uses Redis for persistence
+    * service/service.py -- the main Service using Python Flask-RESTPlus for Swagger
+    * service/models.py -- a Pet model that uses Cloudant for persistence
     * tests/test_server.py -- test cases using unittest for the microservice
     * tests/test_pets.py -- test cases using unittest for the Pet model
