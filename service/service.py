@@ -28,12 +28,23 @@ DELETE /pets/{id} - deletes a Pet record in the database
 """
 
 import sys
+import uuid
 import logging
+from functools import wraps
 from flask import jsonify, request, url_for, make_response
 from flask_api import status    # HTTP Status Codes
 from flask_restplus import Api, Resource, fields, reqparse, inputs
 from service.models import Pet, DataValidationError, DatabaseConnectionError
 from . import app
+
+# Document the type of autorization required
+authorizations = {
+    'apikey': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'X-Api-Key'
+    }
+}
 
 ######################################################################
 # Configure Swagger before initilaizing it
@@ -44,7 +55,8 @@ api = Api(app,
           description='This is a sample server Pet store server.',
           default='pets',
           default_label='Pet shop operations',
-          doc='/' # default also could use doc='/apidocs/'
+          doc='/', # default also could use doc='/apidocs/'
+          authorizations=authorizations
           # prefix='/api'
          )
 
@@ -100,6 +112,32 @@ def database_connection_error(error):
         'message': message
     }, status.HTTP_503_SERVICE_UNAVAILABLE
 
+
+######################################################################
+# Authorization Decorator
+######################################################################
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'X-Api-Key' in request.headers:
+            token = request.headers['X-Api-Key']
+
+        if app.config.get('API_KEY') and app.config['API_KEY'] == token:
+            return f(*args, **kwargs)
+        else:
+            return {'message': 'Invalid or missing token'}, 401
+    return decorated
+
+
+######################################################################
+# Function to generate a random API key (good for testing)
+######################################################################
+def generate_apikey():
+    """ Helper function used when testing API keys """
+    return uuid.uuid4().hex
+
+
 ######################################################################
 # GET HEALTH CHECK
 ######################################################################
@@ -145,11 +183,12 @@ class PetResource(Resource):
     #------------------------------------------------------------------
     # UPDATE AN EXISTING PET
     #------------------------------------------------------------------
-    @api.doc('update_pets')
+    @api.doc('update_pets', security='apikey')
     @api.response(404, 'Pet not found')
     @api.response(400, 'The posted Pet data was not valid')
     @api.expect(pet_model)
     @api.marshal_with(pet_model)
+    @token_required
     def put(self, pet_id):
         """
         Update a Pet
@@ -170,8 +209,9 @@ class PetResource(Resource):
     #------------------------------------------------------------------
     # DELETE A PET
     #------------------------------------------------------------------
-    @api.doc('delete_pets')
+    @api.doc('delete_pets', security='apikey')
     @api.response(204, 'Pet deleted')
+    @token_required
     def delete(self, pet_id):
         """
         Delete a Pet
@@ -222,11 +262,12 @@ class PetCollection(Resource):
     #------------------------------------------------------------------
     # ADD A NEW PET
     #------------------------------------------------------------------
-    @api.doc('create_pets')
+    @api.doc('create_pets', security='apikey')
     @api.expect(create_model)
     @api.response(400, 'The posted data was not valid')
     @api.response(201, 'Pet created successfully')
     @api.marshal_with(pet_model, code=201)
+    @token_required
     def post(self):
         """
         Creates a Pet
