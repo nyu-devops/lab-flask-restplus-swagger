@@ -31,7 +31,7 @@ import sys
 import uuid
 import logging
 from functools import wraps
-from flask import jsonify, request, url_for, make_response
+from flask import jsonify, request, url_for, make_response, render_template
 from flask_api import status    # HTTP Status Codes
 from flask_restplus import Api, Resource, fields, reqparse, inputs
 from service.models import Pet, DataValidationError, DatabaseConnectionError
@@ -55,9 +55,9 @@ api = Api(app,
           description='This is a sample server Pet store server.',
           default='pets',
           default_label='Pet shop operations',
-          doc='/', # default also could use doc='/apidocs/'
-          authorizations=authorizations
-          # prefix='/api'
+          doc='/apidocs', # default also could use doc='/apidocs/'
+          authorizations=authorizations,
+          prefix='/api'
          )
 
 # Define the model so that the docs reflect what can be sent
@@ -146,6 +146,10 @@ def healthcheck():
     """ Let them know our heart is still beating """
     return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
 
+@app.route('/')
+def index():
+    """ Index page """
+    return render_template('index.html')
 
 ######################################################################
 #  PATH: /pets/{id}
