@@ -23,7 +23,7 @@ nosetests --stop tests/test_service.py:TestPetServer
 import unittest
 import logging
 import json
-from service import app, service
+from service import app, routes
 
 # Status Codes
 HTTP_200_OK = 200
@@ -44,7 +44,7 @@ class TestPetServer(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        api_key = service.generate_apikey()
+        api_key = routes.generate_apikey()
         app.config['API_KEY'] = api_key
 
     def setUp(self):
@@ -52,11 +52,11 @@ class TestPetServer(unittest.TestCase):
         self.headers = {
             'X-Api-Key': app.config['API_KEY']
         }
-        service.init_db("test")
-        service.data_reset()
-        service.data_load({"name": "fido", "category": "dog", "available": True})
-        service.data_load({"name": "kitty", "category": "cat", "available": True})
-        service.data_load({"name": "happy", "category": "hippo", "available": False})
+        routes.init_db("test")
+        routes.data_reset()
+        routes.data_load({"name": "fido", "category": "dog", "available": True})
+        routes.data_load({"name": "kitty", "category": "cat", "available": True})
+        routes.data_load({"name": "happy", "category": "hippo", "available": False})
 
     def test_index(self):
         """ Test the index page """
