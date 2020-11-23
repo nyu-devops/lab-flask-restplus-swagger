@@ -1,5 +1,5 @@
 ######################################################################
-# Copyright 2016, 2017 John J. Rofrano. All Rights Reserved.
+# Copyright 2016, 2020 John J. Rofrano. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import logging
 from functools import wraps
 from flask import jsonify, request, url_for, make_response, render_template
 from flask_api import status    # HTTP Status Codes
-from flask_restplus import Api, Resource, fields, reqparse, inputs
+from flask_restx import Api, Resource, fields, reqparse, inputs
 from service.models import Pet, DataValidationError, DatabaseConnectionError
 from . import app
 
@@ -47,7 +47,16 @@ authorizations = {
 }
 
 ######################################################################
-# Configure Swagger before initilaizing it
+# Configure the Root route before OpenAPI
+######################################################################
+@app.route('/')
+def index():
+    """ Index page """
+    return render_template('index.html')
+
+
+######################################################################
+# Configure Swagger before initializing it
 ######################################################################
 api = Api(app,
           version='1.0.0',
@@ -60,18 +69,8 @@ api = Api(app,
           prefix='/api'
          )
 
-# Define the model so that the docs reflect what can be sent
-pet_model = api.model('Pet', {
-    '_id': fields.String(readOnly=True,
-                         description='The unique id assigned internally by service'),
-    'name': fields.String(required=True,
-                          description='The name of the Pet'),
-    'category': fields.String(required=True,
-                              description='The category of Pet (e.g., dog, cat, fish, etc.)'),
-    'available': fields.Boolean(required=True,
-                                description='Is the Pet avaialble for purchase?')
-})
 
+# Define the model so that the docs reflect what can be sent
 create_model = api.model('Pet', {
     'name': fields.String(required=True,
                           description='The name of the Pet'),
@@ -80,6 +79,16 @@ create_model = api.model('Pet', {
     'available': fields.Boolean(required=True,
                                 description='Is the Pet avaialble for purchase?')
 })
+
+pet_model = api.inherit(
+    'PetModel', 
+    create_model,
+    {
+        '_id': fields.String(readOnly=True,
+                            description='The unique id assigned internally by service'),
+    }
+)
+
 
 # query string arguments
 pet_args = reqparse.RequestParser()
@@ -137,19 +146,6 @@ def generate_apikey():
     """ Helper function used when testing API keys """
     return uuid.uuid4().hex
 
-
-######################################################################
-# GET HEALTH CHECK
-######################################################################
-@app.route('/healthcheck')
-def healthcheck():
-    """ Let them know our heart is still beating """
-    return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
-
-@app.route('/')
-def index():
-    """ Index page """
-    return render_template('index.html')
 
 ######################################################################
 #  PATH: /pets/{id}
