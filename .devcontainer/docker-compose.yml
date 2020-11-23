@@ -1,0 +1,46 @@
+---
+# Python 3 with CouchDB
+version: "3"
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    hostname: devops
+    ports:
+      - 5000:5000
+    volumes:
+      - ~/.ssh/:/home/vscode/.ssh/
+      - ~/.bluemix/:/home/vscode/.bluemix/
+      - ~/.kube/:/home/vscode/.kube/
+      - ..:/workspace
+    command: sleep infinity
+    environment:
+      FLASK_APP: service:app
+      CLOUDANT_HOST: couchdb
+      CLOUDANT_USERNAME: admin
+      CLOUDANT_PASSWORD: pass
+    networks:
+      - dev
+    depends_on:
+      - couchdb
+
+  couchdb:
+    image: couchdb
+    restart: always
+    ports:
+      - 5984:5984
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: pass
+    volumes:
+      - couchdb:/data
+    networks:
+      - dev
+
+volumes:
+  couchdb:
+
+networks:
+  dev:
