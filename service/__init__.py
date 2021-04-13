@@ -28,8 +28,10 @@ from flask import Flask
 # The Flask app must be created
 # BEFORE you import modules that depend on it !!!
 
-# Create the Flask aoo
+# Create the Flask app
 app = Flask(__name__)
+
+app.url_map.strict_slashes = False
 
 app.config['SECRET_KEY'] = 'secret-for-dev'
 app.config['LOGGING_LEVEL'] = logging.INFO

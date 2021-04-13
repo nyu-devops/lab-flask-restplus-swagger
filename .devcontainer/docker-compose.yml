@@ -9,11 +9,10 @@ services:
       dockerfile: .devcontainer/Dockerfile
     hostname: devops
     ports:
-      - 5000:5000
+      - 8080:8080
     volumes:
       - ~/.ssh/:/home/vscode/.ssh/
-      - ~/.bluemix/:/home/vscode/.bluemix/
-      - ~/.kube/:/home/vscode/.kube/
+      - ~/.gitconfig:/home/vscode/.gitconfig
       - ..:/workspace
     command: sleep infinity
     environment:

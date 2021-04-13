@@ -7,13 +7,16 @@ Vagrant.configure(2) do |config|
   config.vm.hostname = "swagger"
 
   # set up network ip and port forwarding
-  config.vm.network "forwarded_port", guest: 5000, host: 5000, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
   config.vm.network "private_network", ip: "192.168.33.10"
 
   # Windows users need to change the permissions explicitly so that Windows doesn't
   # set the execute bit on all of your files which messes with GitHub users on Mac and Linux
   #config.vm.synced_folder "./", "/vagrant", owner: "vagrant", mount_options: ["dmode=755,fmode=644"]
 
+  ############################################################
+  # Provider for VirtuaBox on Intel
+  ############################################################
   config.vm.provider "virtualbox" do |vb|
     # Customize the amount of memory on the VM:
     vb.memory = "1024"
@@ -21,6 +24,19 @@ Vagrant.configure(2) do |config|
     # Fixes some DNS issues on some networks
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
     vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+  end
+
+  ############################################################
+  # Provider for Docker on Intel or ARM
+  ############################################################
+  config.vm.provider :docker do |docker, override|
+    override.vm.box = nil
+    docker.image = "rofrano/vagrant-provider:ubuntu"
+    docker.remains_running = true
+    docker.has_ssh = true
+    docker.privileged = true
+    docker.create_args = ["-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro"]
+    # docker.create_args = ['--platform=linux/arm64']
   end
 
   # Copy your .gitconfig file so that your git credentials are correct
@@ -43,12 +59,13 @@ Vagrant.configure(2) do |config|
   ######################################################################
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    apt-get install -y git zip tree python3 python3-pip python3-venv
+    apt-get install -y git vim tree python3 python3-pip python3-venv libpq-dev
     apt-get -y autoremove
     # Create a Python3 Virtual Environment and Activate it in .profile
     sudo -H -u vagrant sh -c 'python3 -m venv ~/venv'
     sudo -H -u vagrant sh -c 'echo ". ~/venv/bin/activate" >> ~/.profile'
     # Install app dependencies as vagrant user
+    sudo -H -u vagrant sh -c '. ~/venv/bin/activate && pip install -U pip && pip install wheel'
     sudo -H -u vagrant sh -c '. ~/venv/bin/activate && cd /vagrant && pip install -r requirements.txt'
   SHELL
 
