@@ -32,10 +32,9 @@ import uuid
 import logging
 from functools import wraps
 from flask import jsonify, request, url_for, make_response, render_template
-from flask_api import status    # HTTP Status Codes
 from flask_restx import Api, Resource, fields, reqparse, inputs
 from service.models import Pet, DataValidationError, DatabaseConnectionError
-from . import app
+from . import app, status    # HTTP Status Codes
 
 # Document the type of autorization required
 authorizations = {

@@ -2,9 +2,9 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  # Updated to use Xenial 64 16.04
-  config.vm.box = "ubuntu/bionic64"
-  config.vm.hostname = "swagger"
+  # Updated to use Focal 64 20.04
+  config.vm.box = "ubuntu/focal64"
+  config.vm.hostname = "ubuntu"
 
   # set up network ip and port forwarding
   config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
@@ -27,7 +27,7 @@ Vagrant.configure(2) do |config|
   end
 
   ############################################################
-  # Provider for Docker on Intel or ARM
+  # Provider for Docker on Intel or ARM (aarch64)
   ############################################################
   config.vm.provider :docker do |docker, override|
     override.vm.box = nil
@@ -35,8 +35,9 @@ Vagrant.configure(2) do |config|
     docker.remains_running = true
     docker.has_ssh = true
     docker.privileged = true
-    docker.create_args = ["-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro"]
-    # docker.create_args = ['--platform=linux/arm64']
+    docker.volumes = ["/sys/fs/cgroup:/sys/fs/cgroup:ro"]
+    # Uncomment to force arm64 for testing images on Intel
+    # docker.create_args = ["--platform=linux/arm64"]     
   end
 
   # Copy your .gitconfig file so that your git credentials are correct
@@ -55,18 +56,25 @@ Vagrant.configure(2) do |config|
   end
 
   ######################################################################
-  # Setup a Python 3 development environment
+  # Create a Python 3 development environment
   ######################################################################
   config.vm.provision "shell", inline: <<-SHELL
+    echo "****************************************"
+    echo " INSTALLING PYTHON 3 ENVIRONMENT..."
+    echo "****************************************"
+    # Install Python 3 and dev tools 
     apt-get update
-    apt-get install -y git vim tree python3 python3-pip python3-venv libpq-dev
+    apt-get install -y git vim tree python3 python3-pip python3-venv
     apt-get -y autoremove
+    
     # Create a Python3 Virtual Environment and Activate it in .profile
     sudo -H -u vagrant sh -c 'python3 -m venv ~/venv'
     sudo -H -u vagrant sh -c 'echo ". ~/venv/bin/activate" >> ~/.profile'
-    # Install app dependencies as vagrant user
+    
+    # Install app dependencies in virtual environment as vagrant user
     sudo -H -u vagrant sh -c '. ~/venv/bin/activate && pip install -U pip && pip install wheel'
     sudo -H -u vagrant sh -c '. ~/venv/bin/activate && cd /vagrant && pip install -r requirements.txt'
+    sudo -H -u vagrant sh -c 'cd /vagrant && echo "PORT=8080" > .env'
   SHELL
 
   ######################################################################
