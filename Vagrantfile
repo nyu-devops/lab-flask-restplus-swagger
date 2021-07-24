@@ -87,4 +87,14 @@ Vagrant.configure(2) do |config|
       args: "--restart=always -d --name couchdb -p 5984:5984 -v couchdb:/opt/couchdb/data -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=pass"
   end
 
+  ######################################################################
+  # Configure CouchDB
+  ######################################################################
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "Waiting 15 seconds for CouchDB to initialize..."
+    sleep 15
+    echo "Creating CouchDB _users database"
+    curl -i -X PUT http://admin:pass@localhost:5984/_users
+  SHELL
+
 end
