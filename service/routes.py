@@ -202,7 +202,7 @@ class PetResource(Resource):
         data = api.payload
         pet.deserialize(data)
         pet.id = pet_id
-        pet.save()
+        pet.update()
         return pet.serialize(), status.HTTP_200_OK
 
     #------------------------------------------------------------------
@@ -305,7 +305,7 @@ class PurchaseResource(Resource):
         if not pet.available:
             api.abort(status.HTTP_409_CONFLICT, 'Pet with id [{}] is not available.'.format(pet_id))
         pet.available = False
-        pet.save()
+        pet.update()
         app.logger.info('Pet with id [%s] has been purchased!', pet.id)
         return pet.serialize(), status.HTTP_200_OK
 
@@ -332,7 +332,7 @@ def init_db(dbname="pets"):
 def data_load(payload):
     """ Loads a Pet into the database """
     pet = Pet(payload['name'], payload['category'], payload['available'])
-    pet.save()
+    pet.create()
 
 def data_reset():
     """ Removes all Pets from the database """

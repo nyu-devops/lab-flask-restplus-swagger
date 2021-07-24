@@ -114,7 +114,7 @@ class TestPetServer(unittest.TestCase):
         data = resp.get_json()
         logging.debug('data = %s', data)
         self.assertEqual(data['name'], 'sammy')
-        self.assertNotEqual(data['_id'], 'foo')
+        self.assertEqual(data['_id'], 'foo')
 
     def test_update_pet(self):
         """ Update a Pet """

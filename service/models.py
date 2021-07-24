@@ -122,22 +122,6 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def save(self):
-        """Saves a Pet in the database"""
-        if self.name is None:  # name is the only required field
-            raise DataValidationError("name attribute is not set")
-        if self.id:
-            self.update()
-        else:
-            self.create()
-
-    @retry(
-        HTTPError,
-        delay=RETRY_DELAY,
-        backoff=RETRY_BACKOFF,
-        tries=RETRY_COUNT,
-        logger=logger,
-    )
     def delete(self):
         """Deletes a Pet from the database"""
         try:
