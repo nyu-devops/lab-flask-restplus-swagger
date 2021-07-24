@@ -72,9 +72,16 @@ Vagrant.configure(2) do |config|
     sudo -H -u vagrant sh -c 'echo ". ~/venv/bin/activate" >> ~/.profile'
     
     # Install app dependencies in virtual environment as vagrant user
-    sudo -H -u vagrant sh -c '. ~/venv/bin/activate && pip install -U pip && pip install wheel'
-    sudo -H -u vagrant sh -c '. ~/venv/bin/activate && cd /vagrant && pip install -r requirements.txt'
-    sudo -H -u vagrant sh -c 'cd /vagrant && echo "PORT=8080" > .env'
+    # sudo -H -u vagrant sh -c '. ~/venv/bin/activate && pip install -U pip && pip install wheel'
+    # sudo -H -u vagrant sh -c '. ~/venv/bin/activate && cd /vagrant && pip install -r requirements.txt'
+    sudo -H -u vagrant sh -c '. ~/venv/bin/activate && 
+      cd /vagrant &&
+      pip install -U pip && 
+      pip install wheel &&
+      pip install -r requirements.txt'
+    
+    # Create .env file if it doesn't exist
+    sudo -H -u vagrant sh -c 'cd /vagrant && if [ ! -f .env ]; then cp dot-env-example .env; fi'
   SHELL
 
   ######################################################################
