@@ -45,6 +45,7 @@ authorizations = {
     }
 }
 
+
 ######################################################################
 # Configure the Root route before OpenAPI
 ######################################################################
@@ -176,7 +177,7 @@ class PetResource(Resource):
         app.logger.info("Request to Retrieve a pet with id [%s]", pet_id)
         pet = Pet.find(pet_id)
         if not pet:
-            api.abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
+            abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
         return pet.serialize(), status.HTTP_200_OK
 
     #------------------------------------------------------------------
@@ -197,7 +198,7 @@ class PetResource(Resource):
         app.logger.info('Request to Update a pet with id [%s]', pet_id)
         pet = Pet.find(pet_id)
         if not pet:
-            api.abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
+            abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
         app.logger.debug('Payload = %s', api.payload)
         data = api.payload
         pet.deserialize(data)
@@ -221,6 +222,8 @@ class PetResource(Resource):
         pet = Pet.find(pet_id)
         if pet:
             pet.delete()
+            app.logger.info('Pet with id [%s] was deleted', pet_id)
+
         return '', status.HTTP_204_NO_CONTENT
 
 
@@ -251,6 +254,7 @@ class PetCollection(Resource):
             app.logger.info('Filtering by availability: %s', args['available'])
             pets = Pet.find_by_availability(args['available'])
         else:
+            app.logger.info('Returning unfiltered list.')
             pets = Pet.all()
 
         app.logger.info('[%s] Pets returned', len(pets))
@@ -277,9 +281,30 @@ class PetCollection(Resource):
         app.logger.debug('Payload = %s', api.payload)
         pet.deserialize(api.payload)
         pet.create()
-        app.logger.info('Pet with new id [%s] saved!', pet.id)
+        app.logger.info('Pet with new id [%s] created!', pet.id)
         location_url = api.url_for(PetResource, pet_id=pet.id, _external=True)
         return pet.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
+
+    #------------------------------------------------------------------
+    # DELETE ALL PETS (for testing only)
+    #------------------------------------------------------------------
+    @api.doc('delete_all_pets', security='apikey')
+    @api.response(204, 'All Pets deleted')
+    @token_required
+    def delete(self):
+        """
+        Delete all Pet
+
+        This endpoint will delete all Pet only if the system is under test
+        """
+        app.logger.info('Request to Delete all pets...')
+        if "TESTING" in app.config and app.config["TESTING"]:
+            Pet.remove_all()
+            app.logger.info("Removed all Pets from the database")
+        else:
+            app.logger.warning("Request to clear database while system not under test")
+
+        return '', status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
@@ -301,9 +326,9 @@ class PurchaseResource(Resource):
         app.logger.info('Request to Purchase a Pet')
         pet = Pet.find(pet_id)
         if not pet:
-            api.abort(status.HTTP_404_NOT_FOUND, 'Pet with id [{}] was not found.'.format(pet_id))
+            abort(status.HTTP_404_NOT_FOUND, 'Pet with id [{}] was not found.'.format(pet_id))
         if not pet.available:
-            api.abort(status.HTTP_409_CONFLICT, 'Pet with id [{}] is not available.'.format(pet_id))
+            abort(status.HTTP_409_CONFLICT, 'Pet with id [{}] is not available.'.format(pet_id))
         pet.available = False
         pet.update()
         app.logger.info('Pet with id [%s] has been purchased!', pet.id)
@@ -311,17 +336,13 @@ class PurchaseResource(Resource):
 
 
 ######################################################################
-# DELETE ALL PET DATA (for testing only)
-######################################################################
-@app.route('/pets/reset', methods=['DELETE'])
-def pets_reset():
-    """ Removes all pets from the database """
-    Pet.remove_all()
-    return make_response('', status.HTTP_204_NO_CONTENT)
-
-######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
+
+def abort(error_code: int, message: str):
+    """Logs errors before aborting"""
+    app.logger.error(message)
+    api.abort(error_code, message)
 
 @app.before_first_request
 def init_db(dbname="pets"):

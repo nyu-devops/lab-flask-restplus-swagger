@@ -35,6 +35,7 @@ class TestPetServer(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        app.config["TESTING"] = True
         api_key = routes.generate_apikey()
         app.config['API_KEY'] = api_key
         app.logger.setLevel(logging.CRITICAL)
@@ -49,6 +50,11 @@ class TestPetServer(unittest.TestCase):
         routes.data_load({"name": "fido", "category": "dog", "available": True})
         routes.data_load({"name": "kitty", "category": "cat", "available": True})
         routes.data_load({"name": "happy", "category": "hippo", "available": False})
+
+    def tearDown(self):
+        """Clear the database"""
+        resp = self.app.delete(BASE_API, headers=self.headers)
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)       
 
     def test_index(self):
         """ Test the index page """
@@ -182,6 +188,19 @@ class TestPetServer(unittest.TestCase):
         self.assertEqual(len(resp.data), 0)
         new_count = self.get_pet_count()
         self.assertEqual(new_count, pet_count - 1)
+
+    def test_delete_all_pets(self):
+        """ Delete all Pets """
+        # save the current number of pets for later comparrison
+        pet_count = self.get_pet_count()
+        self.assertGreater(pet_count, 0)
+        resp = self.app.delete(BASE_API,
+                               content_type='application/json',
+                               headers=self.headers)
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(resp.data), 0)
+        new_count = self.get_pet_count()
+        self.assertEqual(new_count, 0)
 
     def test_create_pet_with_no_name(self):
         """ Create a Pet without a name """
