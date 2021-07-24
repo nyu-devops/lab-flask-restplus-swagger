@@ -51,7 +51,7 @@ authorizations = {
 @app.route('/')
 def index():
     """ Index page """
-    return render_template('index.html')
+    return app.send_static_file('index.html')
 
 
 ######################################################################
