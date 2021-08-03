@@ -266,9 +266,8 @@ class PetCollection(Resource):
     # ADD A NEW PET
     #------------------------------------------------------------------
     @api.doc('create_pets', security='apikey')
-    @api.expect(create_model)
     @api.response(400, 'The posted data was not valid')
-    @api.response(201, 'Pet created successfully')
+    @api.expect(create_model)
     @api.marshal_with(pet_model, code=201)
     @token_required
     def post(self):
