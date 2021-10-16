@@ -3,7 +3,7 @@
 
 Vagrant.configure(2) do |config|
   # Updated to use Focal 64 20.04
-  config.vm.box = "ubuntu/focal64"
+  config.vm.box = "bento/ubuntu-21.04"
   config.vm.hostname = "ubuntu"
 
   # set up network ip and port forwarding
