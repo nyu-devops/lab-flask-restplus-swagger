@@ -28,7 +28,7 @@ DELETE /pets/{id} - deletes a Pet record in the database
 """
 
 import sys
-import uuid
+import secrets
 import logging
 from functools import wraps
 from flask import jsonify, request, url_for, make_response, render_template
@@ -144,7 +144,7 @@ def token_required(f):
 ######################################################################
 def generate_apikey():
     """ Helper function used when testing API keys """
-    return uuid.uuid4().hex
+    return secrets.token_hex(16)
 
 
 ######################################################################

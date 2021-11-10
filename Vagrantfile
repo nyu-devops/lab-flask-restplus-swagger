@@ -8,7 +8,7 @@ Vagrant.configure(2) do |config|
 
   # set up network ip and port forwarding
   config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
-  config.vm.network "private_network", ip: "192.168.33.10"
+  config.vm.network "private_network", ip: "192.168.56.10"
 
   # Windows users need to change the permissions explicitly so that Windows doesn't
   # set the execute bit on all of your files which messes with GitHub users on Mac and Linux
@@ -74,8 +74,7 @@ Vagrant.configure(2) do |config|
     # Install app dependencies in virtual environment as vagrant user
     sudo -H -u vagrant sh -c '. ~/venv/bin/activate && 
       cd /vagrant &&
-      pip install -U pip && 
-      pip install wheel &&
+      pip install -U pip wheel && 
       pip install -r requirements.txt'
     
     # Create .env file if it doesn't exist
