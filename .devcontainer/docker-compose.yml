@@ -1,5 +1,3 @@
----
-# Python 3 with CouchDB
 version: "3"
 
 services:
@@ -7,36 +5,48 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
-    hostname: devops
-    ports:
-      - 8080:8080
+    hostname: nyu
+    container_name: lab-bluemix-cf
     volumes:
-      - ~/.ssh/:/home/vscode/.ssh/
-      - ~/.gitconfig:/home/vscode/.gitconfig
-      - ..:/workspace
+      - ..:/app
     command: sleep infinity
     environment:
       FLASK_APP: service:app
       CLOUDANT_HOST: couchdb
-      CLOUDANT_USERNAME: admin
-      CLOUDANT_PASSWORD: pass
+      CLOUDANT_PORT: 5984
+      CLOUDANT_USERNAME: ${CLOUDANT_USERNAME:-admin}
+      CLOUDANT_PASSWORD: ${CLOUDANT_PASSWORD:-pass}
     networks:
       - dev
     depends_on:
       - couchdb
 
+  # CouchDB Dashboard: http://127.0.0.1:5984/_utils"
   couchdb:
-    image: couchdb
-    restart: always
+    image: couchdb:latest
+    hostname: couchdb
     ports:
       - 5984:5984
-    environment:
-      COUCHDB_USER: admin
-      COUCHDB_PASSWORD: pass
     volumes:
-      - couchdb:/data
+      - couchdb:/opt/couchdb/data
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER:-admin}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:-pass}
     networks:
       - dev
+
+  # Create a few databases needed by CouchDB
+  setup:
+    image: couchdb:latest
+    command: >
+      bash -c "echo '*** SETUP: waiting 15 seconds for couchdb to initialize...'; sleep 15
+      && curl -X PUT http://admin:pass@couchdb:5984/_users
+      && curl -X PUT http://admin:pass@couchdb:5984/_replicator
+      && curl -X PUT http://admin:pass@couchdb:5984/_global_changes"
+    networks:
+      - dev
+    depends_on:
+      - couchdb   
 
 volumes:
   couchdb:
