@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# spell: ignore Rofrano restx gunicorn
 """
 Microservice module
 
@@ -23,6 +24,8 @@ import os
 import sys
 import logging
 from flask import Flask
+from flask_restx import Api
+from service.utils import log_handlers
 
 # NOTE: Do not change the order of this code
 # The Flask app must be created
@@ -37,23 +40,40 @@ app.config['SECRET_KEY'] = 'secret-for-dev'
 app.config['LOGGING_LEVEL'] = logging.INFO
 app.config['API_KEY'] = os.getenv('API_KEY')
 
+# Document the type of authorization required
+authorizations = {
+    'apikey': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'X-Api-Key'
+    }
+}
+
+######################################################################
+# Configure Swagger before initializing it
+######################################################################
+api = Api(app,
+          version='1.0.0',
+          title='Pet Demo REST API Service',
+          description='This is a sample server Pet store server.',
+          default='pets',
+          default_label='Pet shop operations',
+          doc='/apidocs', # default also could use doc='/apidocs/'
+          authorizations=authorizations,
+          prefix='/api'
+         )
+
 # Import the routes After the Flask app is created
 from service import routes, models
 
 # Set up logging for production
-app.logger.propagate = False
-print('Setting up logging for {}...'.format(__name__))
-if __name__ != '__main__':
-    gunicorn_logger = logging.getLogger('gunicorn.error')
-    if gunicorn_logger:
-        app.logger.handlers = gunicorn_logger.handlers
-        app.logger.setLevel(gunicorn_logger.level)
+log_handlers.init_logging(app, "gunicorn.error")
 
 app.logger.info(70 * '*')
 app.logger.info('  P E T   S E R V I C E   R U N N I N G  '.center(70, '*'))
 app.logger.info(70 * '*')
 
-app.logger.info('Service inititalized!')
+app.logger.info('Service initialized!')
 
 # If an API Key was not provided, autogenerate one
 if not app.config['API_KEY']:
