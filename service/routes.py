@@ -33,7 +33,7 @@ import logging
 from functools import wraps
 from flask import jsonify, request, url_for, make_response, render_template
 from flask_restx import Api, Resource, fields, reqparse, inputs
-from service.models import Pet, DataValidationError, DatabaseConnectionError
+from service.models import Pet, Gender, DataValidationError, DatabaseConnectionError
 from . import app, status    # HTTP Status Codes
 
 # Document the type of autorization required
@@ -77,7 +77,8 @@ create_model = api.model('Pet', {
     'category': fields.String(required=True,
                               description='The category of Pet (e.g., dog, cat, fish, etc.)'),
     'available': fields.Boolean(required=True,
-                                description='Is the Pet avaialble for purchase?')
+                                description='Is the Pet avaialble for purchase?'),
+    'gender': fields.String(enum=Gender._member_names_, description='The gender of the Pet')
 })
 
 pet_model = api.inherit(

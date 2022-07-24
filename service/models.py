@@ -34,6 +34,7 @@ Docker Note:
 import os
 import json
 import logging
+from enum import Enum
 from retry import retry
 from cloudant.client import Cloudant
 from cloudant.query import Query
@@ -60,6 +61,11 @@ class DatabaseConnectionError(Exception):
 class DataValidationError(Exception):
     """Custom Exception with data validation fails"""
 
+class Gender(Enum):
+    """Enumeration of valid Pet Genders"""
+    Male = 0
+    Female = 1
+    Unknown = 3
 
 class Pet:
     """Pet interface to database"""
@@ -68,12 +74,13 @@ class Pet:
     client: Cloudant = None
     database: CloudantDatabase = None
 
-    def __init__(self, name=None, category=None, available=True):
+    def __init__(self, name:str=None, category:str=None, available:bool=True, gender:Gender=Gender.Unknown):
         """Constructor"""
         self.id = None  # pylint: disable=invalid-name
         self.name = name
         self.category = category
         self.available = available
+        self.gender = gender
 
     @retry(
         HTTPError,
@@ -137,6 +144,7 @@ class Pet:
             "name": self.name,
             "category": self.category,
             "available": self.available,
+            "gender": self.gender.name
         }
         if self.id:
             pet["_id"] = self.id
@@ -152,6 +160,7 @@ class Pet:
             self.name = data["name"]
             self.category = data["category"]
             self.available = data["available"]
+            self.gender = getattr(Gender, data["gender"])  # create enum from string
         except KeyError as error:
             raise DataValidationError("Invalid pet: missing " + error.args[0])
         except TypeError as error:

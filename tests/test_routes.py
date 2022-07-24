@@ -24,6 +24,7 @@ import unittest
 import logging
 import json
 from service import app, routes, status
+from service.models import Gender
 
 BASE_API = "/api/pets"
 
@@ -47,9 +48,9 @@ class TestPetServer(unittest.TestCase):
         }
         routes.init_db("test")
         routes.data_reset()
-        routes.data_load({"name": "fido", "category": "dog", "available": True})
-        routes.data_load({"name": "kitty", "category": "cat", "available": True})
-        routes.data_load({"name": "happy", "category": "hippo", "available": False})
+        routes.data_load({"name": "fido", "category": "dog", "available": True, "gender": Gender.Male.name})
+        routes.data_load({"name": "kitty", "category": "cat", "available": True, "gender": Gender.Female.name})
+        routes.data_load({"name": "happy", "category": "hippo", "available": False, "gender": Gender.Unknown.name})
 
     def tearDown(self):
         """Clear the database"""
@@ -91,7 +92,7 @@ class TestPetServer(unittest.TestCase):
         # save the current number of pets for later comparrison
         pet_count = self.get_pet_count()
         # add a new pet
-        new_pet = {'name': 'sammy', 'category': 'snake', 'available': True}
+        new_pet = {'name': 'sammy', 'category': 'snake', 'available': True, 'gender': Gender.Unknown.name}
         resp = self.app.post(BASE_API, json=new_pet,
                              content_type='application/json',
                              headers=self.headers)
@@ -115,7 +116,7 @@ class TestPetServer(unittest.TestCase):
 
     def test_create_pet_with_id(self):
         """ Create a new Pet with an id """
-        new_pet = {'_id': 'foo', 'name': 'sammy', 'category': 'snake', 'available': True}
+        new_pet = {'_id': 'foo', 'name': 'sammy', 'category': 'snake', 'available': True, 'gender': Gender.Unknown.name}
         resp = self.app.post(BASE_API, json=new_pet,
                              content_type='application/json',
                              headers=self.headers)
