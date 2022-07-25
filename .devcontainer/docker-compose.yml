@@ -6,12 +6,11 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
     hostname: nyu
-    container_name: lab-bluemix-cf
+    container_name: lab-flask-restplus-swagger
     volumes:
       - ..:/app
     command: sleep infinity
     environment:
-      FLASK_APP: service:app
       CLOUDANT_HOST: couchdb
       CLOUDANT_PORT: 5984
       CLOUDANT_USERNAME: ${CLOUDANT_USERNAME:-admin}

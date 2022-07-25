@@ -1,5 +1,5 @@
 ######################################################################
-# Copyright 2016, 2020 John J. Rofrano. All Rights Reserved.
+# Copyright 2016, 2022 John J. Rofrano. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 # limitations under the License.
 ######################################################################
 
+# spell: ignore Rofrano jsonify restx dbname
 """
 Pet Store Service with Swagger
 
@@ -34,16 +35,8 @@ from functools import wraps
 from flask import jsonify, request, url_for, make_response, render_template
 from flask_restx import Api, Resource, fields, reqparse, inputs
 from service.models import Pet, Gender, DataValidationError, DatabaseConnectionError
-from . import app, status    # HTTP Status Codes
-
-# Document the type of autorization required
-authorizations = {
-    'apikey': {
-        'type': 'apiKey',
-        'in': 'header',
-        'name': 'X-Api-Key'
-    }
-}
+from service.utils import error_handlers, status    # HTTP Status Codes
+from . import app, api
 
 
 ######################################################################
@@ -55,21 +48,6 @@ def index():
     return app.send_static_file('index.html')
 
 
-######################################################################
-# Configure Swagger before initializing it
-######################################################################
-api = Api(app,
-          version='1.0.0',
-          title='Pet Demo REST API Service',
-          description='This is a sample server Pet store server.',
-          default='pets',
-          default_label='Pet shop operations',
-          doc='/apidocs', # default also could use doc='/apidocs/'
-          authorizations=authorizations,
-          prefix='/api'
-         )
-
-
 # Define the model so that the docs reflect what can be sent
 create_model = api.model('Pet', {
     'name': fields.String(required=True,
@@ -77,8 +55,9 @@ create_model = api.model('Pet', {
     'category': fields.String(required=True,
                               description='The category of Pet (e.g., dog, cat, fish, etc.)'),
     'available': fields.Boolean(required=True,
-                                description='Is the Pet avaialble for purchase?'),
-    'gender': fields.String(enum=Gender._member_names_, description='The gender of the Pet')
+                                description='Is the Pet available for purchase?'),
+    'gender': fields.String(enum=Gender._member_names_, description='The gender of the Pet'),
+    'birthday': fields.Date(required=True, description='The day the pet was born')
 })
 
 pet_model = api.inherit(
@@ -90,38 +69,11 @@ pet_model = api.inherit(
     }
 )
 
-
 # query string arguments
 pet_args = reqparse.RequestParser()
 pet_args.add_argument('name', type=str, required=False, help='List Pets by name')
 pet_args.add_argument('category', type=str, required=False, help='List Pets by category')
 pet_args.add_argument('available', type=inputs.boolean, required=False, help='List Pets by availability')
-
-######################################################################
-# Special Error Handlers
-######################################################################
-@api.errorhandler(DataValidationError)
-def request_validation_error(error):
-    """ Handles Value Errors from bad data """
-    message = str(error)
-    app.logger.error(message)
-    return {
-        'status_code': status.HTTP_400_BAD_REQUEST,
-        'error': 'Bad Request',
-        'message': message
-    }, status.HTTP_400_BAD_REQUEST
-
-@api.errorhandler(DatabaseConnectionError)
-def database_connection_error(error):
-    """ Handles Database Errors from connection attempts """
-    message = str(error)
-    app.logger.critical(message)
-    return {
-        'status_code': status.HTTP_503_SERVICE_UNAVAILABLE,
-        'error': 'Service Unavailable',
-        'message': message
-    }, status.HTTP_503_SERVICE_UNAVAILABLE
-
 
 ######################################################################
 # Authorization Decorator
@@ -346,14 +298,8 @@ def abort(error_code: int, message: str):
 
 @app.before_first_request
 def init_db(dbname="pets"):
-    """ Initlaize the model """
+    """ Initialize the model """
     Pet.init_db(dbname)
-
-# load sample data
-def data_load(payload):
-    """ Loads a Pet into the database """
-    pet = Pet(payload['name'], payload['category'], payload['available'])
-    pet.create()
 
 def data_reset():
     """ Removes all Pets from the database """

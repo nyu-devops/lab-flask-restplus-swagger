@@ -1,5 +1,6 @@
-# Werkzeug keeps breaking Flask!
-Werkzeug==2.1.2
+# Werkzeug keeps breaking Flask! 
+# DO NOT Use Werkzeug==2.1.2 it breaks RESTX
+Werkzeug==2.0.3
 
 # Runtime dependencies
 Flask==2.1.2
