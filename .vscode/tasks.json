@@ -12,27 +12,7 @@
                 "reveal": "always",
                 "panel": "dedicated",
             }
-        },
-        {
-            "label": "BDD tests",
-            "type": "shell",
-            "command": "honcho start >/dev/null 2>&1 & sleep 5 && behave; kill %%",
-            "group": "test",
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-            }
-        },
-        {
-            "label": "TDD & BDD tests",
-            "type": "shell",
-            "group": "test",
-            "dependsOrder": "sequence",
-            "dependsOn": ["TDD tests", "BDD tests"],
-            "presentation": {
-                "reveal": "never",
-            }
-        },
+        }
     ]
         
 }
