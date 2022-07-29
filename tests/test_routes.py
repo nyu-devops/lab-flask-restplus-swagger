@@ -29,7 +29,6 @@ import os
 from unittest import TestCase
 import logging
 from urllib.parse import quote_plus
-from werkzeug.datastructures import MultiDict, ImmutableMultiDict
 from service import app, routes
 from service.utils import status
 from service.models import db, init_db, Pet, Gender
@@ -45,6 +44,7 @@ DATABASE_URI = os.getenv(
 )
 BASE_URL = "/api/pets"
 CONTENT_TYPE_JSON = "application/json"
+
 
 ######################################################################
 #  T E S T   C A S E S
@@ -103,7 +103,6 @@ class TestPetRoutes(TestCase):
             test_pet.id = new_pet["id"]
             pets.append(test_pet)
         return pets
-
 
     ############################################################
     #  T E S T   C A S E S
@@ -282,7 +281,7 @@ class TestPetRoutes(TestCase):
         pet = self._create_pets()[0]
         pet_data = pet.serialize()
         del pet_data["name"]
-        response = self.client.put( f"{BASE_URL}/{pet.id}", json=pet_data)
+        response = self.client.put(f"{BASE_URL}/{pet.id}", json=pet_data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # ----------------------------------------------------------
@@ -427,7 +426,6 @@ class TestPetRoutes(TestCase):
         """It should not Purchase a Pet that doesn't exist"""
         response = self.client.put(f"{BASE_URL}/0/purchase", content_type=CONTENT_TYPE_JSON)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
 
     ######################################################################
     #  P A T C H   A N D   M O C K   T E S T   C A S E S

@@ -18,15 +18,14 @@
 """
 Pet Store Service with Swagger
 """
-import sys
 import secrets
-import logging
 from functools import wraps
-from flask import jsonify, request, url_for, make_response, render_template
-from flask_restx import Api, Resource, fields, reqparse, inputs
-from service.models import Pet, Gender, DataValidationError
-from service.utils import error_handlers, status    # HTTP Status Codes
+from flask import jsonify, request
+from flask_restx import Resource, fields, reqparse, inputs
+from service.models import Pet, Gender
+from service.utils import status    # HTTP Status Codes
 from . import app, api
+
 
 ######################################################################
 # GET HEALTH CHECK
@@ -34,7 +33,7 @@ from . import app, api
 @app.route("/health")
 def healthcheck():
     """Let them know our heart is still beating"""
-    return make_response(jsonify(status=200, message="OK"), status.HTTP_200_OK)
+    return jsonify(status=200, message="OK"), status.HTTP_200_OK
 
 
 ######################################################################
@@ -60,7 +59,7 @@ create_model = api.model('Pet', {
 })
 
 pet_model = api.inherit(
-    'PetModel', 
+    'PetModel',
     create_model,
     {
         'id': fields.String(readOnly=True,
@@ -74,6 +73,7 @@ pet_args.add_argument('name', type=str, required=False, help='List Pets by name'
 pet_args.add_argument('category', type=str, required=False, help='List Pets by category')
 pet_args.add_argument('available', type=inputs.boolean, required=False, help='List Pets by availability')
 pet_args.add_argument('gender', type=str, required=False, help='List Pets by gender')
+
 
 ######################################################################
 # Authorization Decorator
@@ -115,9 +115,9 @@ class PetResource(Resource):
     DELETE /pet{id} -  Deletes a Pet with the id
     """
 
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     # RETRIEVE A PET
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     @api.doc('get_pets')
     @api.response(404, 'Pet not found')
     @api.marshal_with(pet_model)
@@ -133,9 +133,9 @@ class PetResource(Resource):
             abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
         return pet.serialize(), status.HTTP_200_OK
 
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     # UPDATE AN EXISTING PET
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     @api.doc('update_pets', security='apikey')
     @api.response(404, 'Pet not found')
     @api.response(400, 'The posted Pet data was not valid')
@@ -159,9 +159,9 @@ class PetResource(Resource):
         pet.update()
         return pet.serialize(), status.HTTP_200_OK
 
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     # DELETE A PET
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     @api.doc('delete_pets', security='apikey')
     @api.response(204, 'Pet deleted')
     @token_required
@@ -186,9 +186,10 @@ class PetResource(Resource):
 @api.route('/pets', strict_slashes=False)
 class PetCollection(Resource):
     """ Handles all interactions with collections of Pets """
-    #------------------------------------------------------------------
+
+    # -----------------------------------------------------------------
     # LIST ALL PETS
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     @api.doc('list_pets')
     @api.expect(pet_args, validate=True)
     @api.marshal_list_with(pet_model)
@@ -212,7 +213,7 @@ class PetCollection(Resource):
             try:
                 gender = getattr(Gender, args['gender'].upper())
                 pets = Pet.find_by_gender(gender)
-            except  AttributeError:
+            except AttributeError:
                 abort(status.HTTP_400_BAD_REQUEST, "Error: Invalid value for gender")
         else:
             app.logger.info('Returning unfiltered list.')
@@ -222,10 +223,9 @@ class PetCollection(Resource):
         app.logger.info('[%s] Pets returned', len(results))
         return results, status.HTTP_200_OK
 
-
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     # ADD A NEW PET
-    #------------------------------------------------------------------
+    # -----------------------------------------------------------------
     @api.doc('create_pets', security='apikey')
     @api.response(400, 'The posted data was not valid')
     @api.expect(create_model)
