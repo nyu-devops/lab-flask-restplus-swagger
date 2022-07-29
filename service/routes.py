@@ -17,26 +17,24 @@
 # spell: ignore Rofrano jsonify restx dbname
 """
 Pet Store Service with Swagger
-
-Paths:
-------
-GET / - Displays a UI for Selenium testing
-GET /pets - Returns a list all of the Pets
-GET /pets/{id} - Returns the Pet with a given id number
-POST /pets - creates a new Pet record in the database
-PUT /pets/{id} - updates a Pet record in the database
-DELETE /pets/{id} - deletes a Pet record in the database
 """
-
 import sys
 import secrets
 import logging
 from functools import wraps
 from flask import jsonify, request, url_for, make_response, render_template
 from flask_restx import Api, Resource, fields, reqparse, inputs
-from service.models import Pet, Gender, DataValidationError, DatabaseConnectionError
+from service.models import Pet, Gender, DataValidationError
 from service.utils import error_handlers, status    # HTTP Status Codes
 from . import app, api
+
+######################################################################
+# GET HEALTH CHECK
+######################################################################
+@app.route("/health")
+def healthcheck():
+    """Let them know our heart is still beating"""
+    return make_response(jsonify(status=200, message="OK"), status.HTTP_200_OK)
 
 
 ######################################################################
@@ -45,6 +43,7 @@ from . import app, api
 @app.route('/')
 def index():
     """ Index page """
+    app.logger.info("Request for the home page")
     return app.send_static_file('index.html')
 
 
@@ -64,7 +63,7 @@ pet_model = api.inherit(
     'PetModel', 
     create_model,
     {
-        '_id': fields.String(readOnly=True,
+        'id': fields.String(readOnly=True,
                             description='The unique id assigned internally by service'),
     }
 )
@@ -74,6 +73,7 @@ pet_args = reqparse.RequestParser()
 pet_args.add_argument('name', type=str, required=False, help='List Pets by name')
 pet_args.add_argument('category', type=str, required=False, help='List Pets by category')
 pet_args.add_argument('available', type=inputs.boolean, required=False, help='List Pets by availability')
+pet_args.add_argument('gender', type=str, required=False, help='List Pets by gender')
 
 ######################################################################
 # Authorization Decorator
@@ -206,12 +206,20 @@ class PetCollection(Resource):
         elif args['available'] is not None:
             app.logger.info('Filtering by availability: %s', args['available'])
             pets = Pet.find_by_availability(args['available'])
+        elif args['gender'] is not None:
+            app.logger.info('Filtering by gender: %s', args['gender'])
+            # create enum from string
+            try:
+                gender = getattr(Gender, args['gender'].upper())
+                pets = Pet.find_by_gender(gender)
+            except  AttributeError:
+                abort(status.HTTP_400_BAD_REQUEST, "Error: Invalid value for gender")
         else:
             app.logger.info('Returning unfiltered list.')
             pets = Pet.all()
 
-        app.logger.info('[%s] Pets returned', len(pets))
         results = [pet.serialize() for pet in pets]
+        app.logger.info('[%s] Pets returned', len(results))
         return results, status.HTTP_200_OK
 
 
@@ -236,27 +244,6 @@ class PetCollection(Resource):
         app.logger.info('Pet with new id [%s] created!', pet.id)
         location_url = api.url_for(PetResource, pet_id=pet.id, _external=True)
         return pet.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
-
-    #------------------------------------------------------------------
-    # DELETE ALL PETS (for testing only)
-    #------------------------------------------------------------------
-    @api.doc('delete_all_pets', security='apikey')
-    @api.response(204, 'All Pets deleted')
-    @token_required
-    def delete(self):
-        """
-        Delete all Pet
-
-        This endpoint will delete all Pet only if the system is under test
-        """
-        app.logger.info('Request to Delete all pets...')
-        if "TESTING" in app.config and app.config["TESTING"]:
-            Pet.remove_all()
-            app.logger.info("Removed all Pets from the database")
-        else:
-            app.logger.warning("Request to clear database while system not under test")
-
-        return '', status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
@@ -295,12 +282,3 @@ def abort(error_code: int, message: str):
     """Logs errors before aborting"""
     app.logger.error(message)
     api.abort(error_code, message)
-
-@app.before_first_request
-def init_db(dbname="pets"):
-    """ Initialize the model """
-    Pet.init_db(dbname)
-
-def data_reset():
-    """ Removes all Pets from the database """
-    Pet.remove_all()
