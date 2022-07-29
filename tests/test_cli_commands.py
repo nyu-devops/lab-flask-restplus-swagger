@@ -10,7 +10,7 @@ class TestFlaskCLI(TestCase):
     def setUp(self):
         self.runner = CliRunner()
 
-    @patch('service.utils.cli_commands.db')
+    @patch("service.utils.cli_commands.db")
     def test_create_db(self, db_mock):
         """It should call the create-db command"""
         db_mock.return_value = MagicMock()

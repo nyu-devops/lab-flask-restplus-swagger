@@ -117,7 +117,7 @@ class Pet(db.Model):
             "category": self.category,
             "available": self.available,
             "gender": self.gender.name,  # convert enum to string
-            "birthday": self.birthday.isoformat()
+            "birthday": self.birthday.isoformat(),
         }
 
     def deserialize(self, data: dict):
@@ -141,7 +141,9 @@ class Pet(db.Model):
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
-            raise DataValidationError("Invalid pet: missing " + error.args[0]) from error
+            raise DataValidationError(
+                "Invalid pet: missing " + error.args[0]
+            ) from error
         except TypeError as error:
             raise DataValidationError(
                 "Invalid pet: body of request contained bad or no data " + str(error)

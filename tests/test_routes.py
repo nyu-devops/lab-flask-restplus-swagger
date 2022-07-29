@@ -62,7 +62,7 @@ class TestPetRoutes(TestCase):
         init_db(app)
         # generate api key for testing
         api_key = routes.generate_apikey()
-        app.config['API_KEY'] = api_key
+        app.config["API_KEY"] = api_key
         app.logger.setLevel(logging.CRITICAL)
 
     @classmethod
@@ -72,9 +72,7 @@ class TestPetRoutes(TestCase):
 
     def setUp(self):
         self.client = app.test_client()
-        self.headers = {
-            'X-Api-Key': app.config['API_KEY']
-        }
+        self.headers = {"X-Api-Key": app.config["API_KEY"]}
         db.session.query(Pet).delete()  # clean up the last tests
         db.session.commit()
 
@@ -91,12 +89,12 @@ class TestPetRoutes(TestCase):
         for _ in range(count):
             test_pet = PetFactory()
             response = self.client.post(
-                BASE_URL,
-                json=test_pet.serialize(),
-                headers=self.headers
+                BASE_URL, json=test_pet.serialize(), headers=self.headers
             )
             self.assertEqual(
-                response.status_code, status.HTTP_201_CREATED, "Could not create test pet"
+                response.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test pet",
             )
             new_pet = response.get_json()
             logging.debug(f"New Pet = {new_pet}")
@@ -118,7 +116,7 @@ class TestPetRoutes(TestCase):
         response = self.client.get("/health")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
-        self.assertEqual(data['message'], 'OK')
+        self.assertEqual(data["message"], "OK")
 
     # ----------------------------------------------------------
     # TEST LIST
@@ -159,9 +157,7 @@ class TestPetRoutes(TestCase):
         test_pet = PetFactory()
         logging.debug("Test Pet: %s", test_pet.serialize())
         response = self.client.post(
-            BASE_URL,
-            json=test_pet.serialize(),
-            headers=self.headers
+            BASE_URL, json=test_pet.serialize(), headers=self.headers
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -193,39 +189,24 @@ class TestPetRoutes(TestCase):
         new_pet = pet.serialize()
         del new_pet["name"]
         logging.debug("Pet no name: %s", new_pet)
-        response = self.client.post(
-            BASE_URL,
-            json=new_pet,
-            headers=self.headers
-        )
+        response = self.client.post(BASE_URL, json=new_pet, headers=self.headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_pet_no_content_type(self):
         """It should not Create a Pet with no Content-Type"""
-        response = self.client.post(
-            BASE_URL,
-            data="bad data",
-            headers=self.headers
-        )
+        response = self.client.post(BASE_URL, data="bad data", headers=self.headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_pet_wrong_content_type(self):
         """It should not Create a Pet with wrong Content-Type"""
         response = self.client.post(
-            BASE_URL,
-            data={},
-            content_type="plain/text",
-            headers=self.headers
+            BASE_URL, data={}, content_type="plain/text", headers=self.headers
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_call_create_with_an_id(self):
         """It should not allow calling endpoint incorrectly"""
-        response = self.client.post(
-            f"{BASE_URL}/0",
-            json={},
-            headers=self.headers
-        )
+        response = self.client.post(f"{BASE_URL}/0", json={}, headers=self.headers)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     # ----------------------------------------------------------
@@ -236,9 +217,7 @@ class TestPetRoutes(TestCase):
         # create a pet to update
         test_pet = PetFactory()
         response = self.client.post(
-            BASE_URL,
-            json=test_pet.serialize(),
-            headers=self.headers
+            BASE_URL, json=test_pet.serialize(), headers=self.headers
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -247,9 +226,7 @@ class TestPetRoutes(TestCase):
         logging.debug(new_pet)
         new_pet["category"] = "unknown"
         response = self.client.put(
-            f"{BASE_URL}/{new_pet['id']}",
-            json=new_pet,
-            headers=self.headers
+            f"{BASE_URL}/{new_pet['id']}", json=new_pet, headers=self.headers
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_pet = response.get_json()
@@ -261,23 +238,17 @@ class TestPetRoutes(TestCase):
         pet_data = pet.serialize()
         del pet_data["name"]
         response = self.client.put(
-            f"{BASE_URL}/{pet.id}",
-            json=pet_data,
-            headers=self.headers
+            f"{BASE_URL}/{pet.id}", json=pet_data, headers=self.headers
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_pet_not_found(self):
         """It should not Update a Pet that doesn't exist"""
-        response = self.client.put(
-            f"{BASE_URL}/0",
-            json={},
-            headers=self.headers
-        )
+        response = self.client.put(f"{BASE_URL}/0", json={}, headers=self.headers)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_pet_not_authorized(self):
-        """ It should not Update a Pet Not Authorized """
+        """It should not Update a Pet Not Authorized"""
         pet = self._create_pets()[0]
         pet_data = pet.serialize()
         del pet_data["name"]
@@ -351,9 +322,7 @@ class TestPetRoutes(TestCase):
         logging.debug("Unavailable Pets [%d] %s", unavailable_count, unavailable_pets)
 
         # test for available
-        response = self.client.get(
-            BASE_URL, query_string="available=true"
-        )
+        response = self.client.get(BASE_URL, query_string="available=true")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), available_count)
@@ -362,9 +331,7 @@ class TestPetRoutes(TestCase):
             self.assertEqual(pet["available"], True)
 
         # test for unavailable
-        response = self.client.get(
-            BASE_URL, query_string="available=false"
-        )
+        response = self.client.get(BASE_URL, query_string="available=false")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), unavailable_count)
@@ -406,7 +373,9 @@ class TestPetRoutes(TestCase):
         pets = self._create_pets(10)
         available_pets = [pet for pet in pets if pet.available is True]
         pet = available_pets[0]
-        response = self.client.put(f"{BASE_URL}/{pet.id}/purchase", content_type=CONTENT_TYPE_JSON)
+        response = self.client.put(
+            f"{BASE_URL}/{pet.id}/purchase", content_type=CONTENT_TYPE_JSON
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(f"{BASE_URL}/{pet.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -419,12 +388,16 @@ class TestPetRoutes(TestCase):
         pets = self._create_pets(10)
         unavailable_pets = [pet for pet in pets if pet.available is False]
         pet = unavailable_pets[0]
-        response = self.client.put(f"{BASE_URL}/{pet.id}/purchase", content_type=CONTENT_TYPE_JSON)
+        response = self.client.put(
+            f"{BASE_URL}/{pet.id}/purchase", content_type=CONTENT_TYPE_JSON
+        )
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
     def test_purchase_does_not_exist(self):
         """It should not Purchase a Pet that doesn't exist"""
-        response = self.client.put(f"{BASE_URL}/0/purchase", content_type=CONTENT_TYPE_JSON)
+        response = self.client.put(
+            f"{BASE_URL}/0/purchase", content_type=CONTENT_TYPE_JSON
+        )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     ######################################################################
