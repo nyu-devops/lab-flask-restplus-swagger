@@ -59,7 +59,7 @@ create_model = api.model(
             required=True, description="Is the Pet available for purchase?"
         ),
         "gender": fields.String(
-            enum=Gender._member_names_, description="The gender of the Pet"
+            enum=Gender._member_names_, description="The gender of the Pet"  # pylint: disable=protected-access
         ),
         "birthday": fields.Date(required=True, description="The day the pet was born"),
     },
@@ -90,7 +90,8 @@ pet_args.add_argument("gender", type=str, required=False, help="List Pets by gen
 ######################################################################
 # Authorization Decorator
 ######################################################################
-def token_required(f):
+def token_required(f):  # pylint: disable=invalid-name
+    """Checks for an authorization token in the header"""
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
@@ -99,9 +100,8 @@ def token_required(f):
 
         if app.config.get("API_KEY") and app.config["API_KEY"] == token:
             return f(*args, **kwargs)
-        else:
-            return {"message": "Invalid or missing token"}, 401
 
+        return {"message": "Invalid or missing token"}, 401
     return decorated
 
 
@@ -145,7 +145,7 @@ class PetResource(Resource):
         if not pet:
             abort(
                 status.HTTP_404_NOT_FOUND,
-                "Pet with id '{}' was not found.".format(pet_id),
+                f"Pet with id '{pet_id}' was not found."
             )
         return pet.serialize(), status.HTTP_200_OK
 
@@ -169,7 +169,7 @@ class PetResource(Resource):
         if not pet:
             abort(
                 status.HTTP_404_NOT_FOUND,
-                "Pet with id '{}' was not found.".format(pet_id),
+                f"Pet with id '{pet_id}' was not found."
             )
         app.logger.debug("Payload = %s", api.payload)
         data = api.payload
@@ -287,12 +287,12 @@ class PurchaseResource(Resource):
         if not pet:
             abort(
                 status.HTTP_404_NOT_FOUND,
-                "Pet with id [{}] was not found.".format(pet_id),
+                f"Pet with id [{pet_id}] was not found."
             )
         if not pet.available:
             abort(
                 status.HTTP_409_CONFLICT,
-                "Pet with id [{}] is not available.".format(pet_id),
+                f"Pet with id [{pet_id}] is not available."
             )
         pet.available = False
         pet.update()
