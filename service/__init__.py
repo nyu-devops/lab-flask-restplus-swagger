@@ -25,7 +25,7 @@ import sys
 import logging
 from flask import Flask
 from flask_restx import Api
-from service.utils import log_handlers
+from service.common import log_handlers
 
 # NOTE: Do not change the order of this code
 # The Flask app must be created

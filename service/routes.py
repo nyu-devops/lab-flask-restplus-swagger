@@ -35,7 +35,7 @@ from functools import wraps
 from flask import jsonify, request, url_for, make_response, render_template
 from flask_restx import Api, Resource, fields, reqparse, inputs
 from service.models import Pet, Gender, DataValidationError, DatabaseConnectionError
-from service.utils import error_handlers, status    # HTTP Status Codes
+from service.common import error_handlers, status    # HTTP Status Codes
 from . import app, api
 
 

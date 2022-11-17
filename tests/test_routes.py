@@ -29,7 +29,7 @@ from unittest.mock import patch
 from urllib.parse import quote_plus
 from werkzeug.datastructures import MultiDict, ImmutableMultiDict
 from service import app, routes
-from service.utils import status
+from service.common import status
 from service.routes import DatabaseConnectionError
 from tests.factories import PetFactory
 
