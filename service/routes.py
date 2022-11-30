@@ -71,9 +71,9 @@ pet_model = api.inherit(
 
 # query string arguments
 pet_args = reqparse.RequestParser()
-pet_args.add_argument('name', type=str, required=False, help='List Pets by name')
-pet_args.add_argument('category', type=str, required=False, help='List Pets by category')
-pet_args.add_argument('available', type=inputs.boolean, required=False, help='List Pets by availability')
+pet_args.add_argument('name', type=str, location='args', required=False, help='List Pets by name')
+pet_args.add_argument('category', type=str, location='args', required=False, help='List Pets by category')
+pet_args.add_argument('available', type=inputs.boolean, location='args', required=False, help='List Pets by availability')
 
 ######################################################################
 # Authorization Decorator
