@@ -39,6 +39,7 @@ app.url_map.strict_slashes = False
 app.config['SECRET_KEY'] = 'secret-for-dev'
 app.config['LOGGING_LEVEL'] = logging.INFO
 app.config['API_KEY'] = os.getenv('API_KEY')
+app.config['ERROR_404_HELP'] = False
 
 # Document the type of authorization required
 authorizations = {
