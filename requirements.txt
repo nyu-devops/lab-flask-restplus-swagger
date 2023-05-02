@@ -2,7 +2,7 @@
 Werkzeug==2.2.3
 
 # Runtime dependencies
-Flask==2.2.3
+Flask==2.3.2
 flask-restx==1.1.0
 cloudant==2.15.0
 retry==0.9.2
