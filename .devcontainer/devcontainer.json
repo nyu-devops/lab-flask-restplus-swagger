@@ -5,24 +5,28 @@
 	"service": "app",
 	"workspaceFolder": "/app",
 	"remoteUser": "devops",
-	"extensions": [
-		"VisualStudioExptTeam.vscodeintellicode",
-		"ms-python.python",
-		"ms-python.vscode-pylance",
-		"alexkrechik.cucumberautocomplete",
-		"cstrap.flask-snippets",
-		"yzhang.markdown-all-in-one",
-		"bierner.github-markdown-preview",
-		"hnw.vscode-auto-open-markdown-preview",
-		"DavidAnson.vscode-markdownlint",
-		"donjayamanne.githistory",
-		"GitHub.vscode-pull-request-github",
-		"hbenl.vscode-test-explorer",
-		"LittleFoxTeam.vscode-python-test-adapter",
-		"njpwerner.autodocstring",
-		"redhat.vscode-yaml",
-		"bbenoist.vagrant"
-	],
-	"forwardPorts": [8080],
-	"postCreateCommand": "sudo pip install -r requirements.txt"
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"VisualStudioExptTeam.vscodeintellicode",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"cstrap.flask-snippets",
+				"yzhang.markdown-all-in-one",
+				"bierner.github-markdown-preview",
+				"hnw.vscode-auto-open-markdown-preview",
+				"DavidAnson.vscode-markdownlint",
+				"donjayamanne.githistory",
+				"GitHub.vscode-pull-request-github",
+				"hbenl.vscode-test-explorer",
+				"LittleFoxTeam.vscode-python-test-adapter",
+				"njpwerner.autodocstring",
+				"redhat.vscode-yaml",
+				"bbenoist.vagrant"
+			]
+		}
+	},
+	// Create .env file if it doesn't exist
+	"postCreateCommand": "if [ ! -f .env ]; then cp dot-env-example .env; fi;",
+	"forwardPorts": [8080]
 }
