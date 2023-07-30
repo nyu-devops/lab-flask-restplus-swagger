@@ -1,5 +1,5 @@
 ######################################################################
-# Copyright 2016, 2022 John J. Rofrano. All Rights Reserved.
+# Copyright 2016, 2023 John J. Rofrano. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ nosetests --stop tests/test_pets.py:TestPets
 import logging
 from datetime import date
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
-from requests import HTTPError, ConnectionError
+from unittest.mock import patch
+from requests import HTTPError, ConnectionError  # pylint: disable=redefined-builtin
 from service.models import Pet, Gender, DataValidationError, DatabaseConnectionError
 from tests.factories import PetFactory
 
@@ -55,11 +55,12 @@ BINDING_CLOUDANT = {
     "url": "http://admin:pass@localhost:5984",
 }
 
+
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
-class TestPetModel(TestCase):
-    """Test Cases for Pet Model"""
+class BaseTestCase(TestCase):
+    """Base Test Cases for Pet Model"""
 
     def setUp(self):
         """Initialize the Cloudant database"""
@@ -75,19 +76,23 @@ class TestPetModel(TestCase):
             pet_collection.append(pet)
         return pet_collection
 
+
+class TestPetModel(BaseTestCase):
+    """CRUD Test Cases for Pet Model"""
+
     def test_create_a_pet(self):
-        """Create a pet and assert that it exists"""
-        pet = Pet("fido", "dog", False, Gender.MALE, date(2020,4,1))
+        """It should create a pet and assert that it exists"""
+        pet = Pet("fido", "dog", False, Gender.MALE, date(2020, 4, 1))
         self.assertNotEqual(pet, None)
         self.assertEqual(pet.id, None)
         self.assertEqual(pet.name, "fido")
         self.assertEqual(pet.category, "dog")
         self.assertEqual(pet.available, False)
         self.assertEqual(pet.gender, Gender.MALE)
-        self.assertEqual(pet.birthday, date(2020,4,1))
+        self.assertEqual(pet.birthday, date(2020, 4, 1))
 
     def test_add_a_pet(self):
-        """Create a pet and add it to the database"""
+        """It should create a pet and add it to the database"""
         pets = Pet.all()
         self.assertEqual(pets, [])
         pet = PetFactory()
@@ -106,7 +111,7 @@ class TestPetModel(TestCase):
         self.assertEqual(pets[0].birthday, pet.birthday)
 
     def test_update_a_pet(self):
-        """Update a Pet"""
+        """It should update a Pet"""
         pet = PetFactory()
         logging.debug("Pet: %s", pet.serialize())
         pet.create()
@@ -122,7 +127,7 @@ class TestPetModel(TestCase):
         self.assertEqual(pets[0].name, pet.name)
 
     def test_delete_a_pet(self):
-        """Delete a Pet"""
+        """It should delete a Pet"""
         pet = PetFactory()
         logging.debug("Pet: %s", pet.serialize())
         pet.create()
@@ -132,7 +137,7 @@ class TestPetModel(TestCase):
         self.assertEqual(len(Pet.all()), 0)
 
     def test_serialize_a_pet(self):
-        """Serialize a Pet"""
+        """It should serialize a Pet"""
         pet = PetFactory()
         data = pet.serialize()
         logging.debug("Pet data: %s", data)
@@ -145,7 +150,7 @@ class TestPetModel(TestCase):
         self.assertEqual(data["birthday"], pet.birthday.isoformat())
 
     def test_deserialize_a_pet(self):
-        """Deserialize a Pet"""
+        """It should deserialize a Pet"""
         data = PetFactory().serialize()
         logging.debug("Pet data: %s", data)
         pet = Pet()
@@ -158,42 +163,50 @@ class TestPetModel(TestCase):
         self.assertEqual(pet.gender.name, data["gender"])
         self.assertEqual(pet.birthday, date.fromisoformat(data["birthday"]))
 
+
+class TestPetModelFalures(BaseTestCase):
+    """Failure Test Cases for Pet Model"""
+
     def test_deserialize_with_no_name(self):
-        """Deserialize a Pet that has no name"""
+        """It should not deserialize a Pet that has no name"""
         data = PetFactory().serialize()
-        del(data["name"])
+        del data["name"]
         pet = Pet()
         self.assertRaises(DataValidationError, pet.deserialize, data)
 
     def test_deserialize_with_no_data(self):
-        """Deserialize a Pet that has no data"""
+        """It should not deserialize a Pet that has no data"""
         pet = Pet()
         self.assertRaises(DataValidationError, pet.deserialize, None)
 
     def test_deserialize_with_bad_data(self):
-        """Deserialize a Pet that has bad data"""
+        """It should not deserialize a Pet that has bad data"""
         pet = Pet()
         self.assertRaises(DataValidationError, pet.deserialize, "string data")
 
     def test_deserialize_with_bad_available(self):
-        """Deserialize a Pet with non-boolean available"""
+        """It should not deserialize a Pet with non-boolean available"""
         data = PetFactory().serialize()
         data["available"] = "foo"
         pet = Pet()
         self.assertRaises(DataValidationError, pet.deserialize, data)
 
     def test_save_a_pet_with_no_name(self):
-        """Save a Pet with no name"""
+        """It should not save a Pet with no name"""
         pet = Pet(None, "cat")
         self.assertRaises(DataValidationError, pet.create)
 
     def test_create_a_pet_with_no_name(self):
-        """Create a Pet with no name"""
+        """It should not create a Pet with no name"""
         pet = Pet(None, "cat")
         self.assertRaises(DataValidationError, pet.create)
 
+
+class TestPetModelQueries(BaseTestCase):
+    """Query Test Cases for Pet Model"""
+
     def test_find_pet(self):
-        """Find a Pet by id"""
+        """It should find a Pet by id"""
         pets = self._create_pets(5)
         saved_pet = pets[0]
         pet = Pet.find(saved_pet.id)
@@ -206,18 +219,18 @@ class TestPetModel(TestCase):
         self.assertEqual(pet.birthday, saved_pet.birthday)
 
     def test_find_with_no_pets(self):
-        """Find a Pet with empty database"""
+        """It should not find a Pet with empty database"""
         pet = Pet.find("foo")
         self.assertIs(pet, None)
 
     def test_pet_not_found(self):
-        """Find a Pet that doesn't exist"""
+        """It should not find a Pet that doesn't exist"""
         PetFactory().create()
         pet = Pet.find("foo")
         self.assertIs(pet, None)
 
     def test_find_by_name(self):
-        """Find a Pet by Name"""
+        """It should find a Pet by Name"""
         self._create_pets(5)
         saved_pet = PetFactory()
         saved_pet.name = "Rumpelstiltskin"
@@ -233,10 +246,10 @@ class TestPetModel(TestCase):
         self.assertEqual(pet.birthday, saved_pet.birthday)
 
     def test_find_by_category(self):
-        """Find a Pet by Category"""
+        """It should find a Pet by Category"""
         pets = self._create_pets(5)
         category = pets[0].category
-        category_count =  len([pet for pet in pets if pet.category == category])
+        category_count = len([pet for pet in pets if pet.category == category])
         logging.debug("Looking for %d Pets in category %s", category_count, category)
         found_pets = Pet.find_by_category(category)
         self.assertEqual(len(found_pets), category_count)
@@ -244,21 +257,23 @@ class TestPetModel(TestCase):
             self.assertEqual(pet.category, category)
 
     def test_find_by_availability(self):
-        """Find a Pet by Availability"""
+        """It should find a Pet by Availability"""
         pets = self._create_pets(5)
         available = pets[0].available
         available_count = len([pet for pet in pets if pet.available == available])
-        logging.debug("Looking for %d Pets where availabe is %s", available_count, available)
+        logging.debug(
+            "Looking for %d Pets where availabe is %s", available_count, available
+        )
         found_pets = Pet.find_by_availability(available)
         self.assertEqual(len(found_pets), available_count)
         for pet in found_pets:
             self.assertEqual(pet.available, available)
 
     def test_find_by_gender(self):
-        """Find a Pet by Gender"""
+        """It should find a Pet by Gender"""
         pets = self._create_pets(5)
         gender = pets[0].gender
-        gender_count =  len([pet for pet in pets if pet.gender == gender])
+        gender_count = len([pet for pet in pets if pet.gender == gender])
         logging.debug("Looking for %d Pets where gender is %s", gender_count, gender)
         found_pets = Pet.find_by_gender(gender.name)
         self.assertEqual(len(found_pets), gender_count)
@@ -266,19 +281,23 @@ class TestPetModel(TestCase):
             self.assertEqual(pet.gender, gender)
 
     def test_create_query_index(self):
-        """Test create query index"""
+        """It should create a query index"""
         self._create_pets(5)
         Pet.create_query_index("category")
 
     def test_disconnect(self):
-        """Test Disconnet"""
+        """It should disconnet from database"""
         Pet.disconnect()
         pet = PetFactory()
         self.assertRaises(AttributeError, pet.create)
 
+
+class TestPetModelMocks(BaseTestCase):
+    """Mock Test Cases for Pet Model"""
+
     @patch("cloudant.database.CloudantDatabase.create_document")
     def test_http_error(self, bad_mock):
-        """Test a Bad Create with HTTP error"""
+        """It should not create with HTTP error"""
         bad_mock.side_effect = HTTPError()
         pet = PetFactory()
         pet.create()
@@ -286,7 +305,7 @@ class TestPetModel(TestCase):
 
     @patch("cloudant.document.Document.exists")
     def test_document_not_exist(self, bad_mock):
-        """Test a Bad Document Exists"""
+        """It should handle a bad document"""
         bad_mock.return_value = False
         pet = PetFactory()
         pet.create()
@@ -294,7 +313,7 @@ class TestPetModel(TestCase):
 
     @patch("cloudant.database.CloudantDatabase.__getitem__")
     def test_key_error_on_update(self, bad_mock):
-        """Test KeyError on update"""
+        """It should  throw a KeyError on update"""
         bad_mock.side_effect = KeyError()
         pet = PetFactory()
         pet.create()
@@ -303,7 +322,7 @@ class TestPetModel(TestCase):
 
     @patch("cloudant.database.CloudantDatabase.__getitem__")
     def test_key_error_on_delete(self, bad_mock):
-        """Test KeyError on delete"""
+        """It should throw a KeyError on delete"""
         bad_mock.side_effect = KeyError()
         pet = PetFactory()
         pet.create()
@@ -311,13 +330,6 @@ class TestPetModel(TestCase):
 
     @patch("cloudant.client.Cloudant.__init__")
     def test_connection_error(self, bad_mock):
-        """Test Connection error handler"""
+        """It should handle Connection error"""
         bad_mock.side_effect = ConnectionError()
         self.assertRaises(DatabaseConnectionError, Pet.init_db, "test")
-
-    # @patch.dict(os.environ, {'VCAP_SERVICES': json.dumps(VCAP_SERVICES)})
-    # def test_vcap_services(self):
-    #     """ Test if VCAP_SERVICES works """
-    #     Pet.init_db("test")
-    #     self.assertIsNotNone(Pet.client)
-    #

@@ -33,4 +33,4 @@ class PetFactory(factory.Factory):
     category = FuzzyChoice(choices=["dog", "cat", "bird", "fish", "reptile"])
     available = FuzzyChoice(choices=[True, False])
     gender = FuzzyChoice(choices=[Gender.MALE, Gender.FEMALE, Gender.UNKNOWN])
-    birthday = FuzzyDate(date(2019,1,1))
+    birthday = FuzzyDate(date(2019, 1, 1))
