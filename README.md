@@ -56,10 +56,10 @@ This will use a Docker container instead of a Virtual Machine (VM). Everything e
 
 ## Running the code
 
-You can now run `nosetests` to run the tests and make sure that everything works as expected.
+You can now run `green` to run the tests and make sure that everything works as expected.
 
 ```bash
-$ nosetests
+$ green
 ```
 
 You can then run the server with:
