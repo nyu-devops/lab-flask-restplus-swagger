@@ -42,7 +42,13 @@ app.config["API_KEY"] = os.getenv("API_KEY")
 app.config["ERROR_404_HELP"] = False
 
 # Document the type of authorization required
-authorizations = {"apikey": {"type": "apiKey", "in": "header", "name": "X-Api-Key"}}
+authorizations = {
+    "apikey": {
+        "type": "apiKey", 
+        "in": "header", 
+        "name": "X-Api-Key"
+    }
+}
 
 ######################################################################
 # Configure Swagger before initializing it
