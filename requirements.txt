@@ -1,6 +1,6 @@
 # Pinned dependencies that cause breakage
 Werkzeug==2.3.3
-urllib3==1.26.15
+urllib3==1.26.17
 
 # Runtime dependencies
 Flask==2.3.2
