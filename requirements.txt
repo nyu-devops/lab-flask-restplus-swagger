@@ -1,5 +1,5 @@
 # Pinned dependencies that cause breakage
-Werkzeug==2.3.3
+Werkzeug==3.0.1
 urllib3==1.26.15
 
 # Runtime dependencies
