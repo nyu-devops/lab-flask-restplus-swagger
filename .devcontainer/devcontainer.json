@@ -7,6 +7,23 @@
 	"remoteUser": "devops",
 	"customizations": {
 		"vscode": {
+			"settings": {
+				"[python]": {
+					"editor.defaultFormatter": "ms-python.black-formatter",
+					"editor.formatOnSave": true
+				},
+				"python.testing.pytestEnabled": false,
+				"python.testing.unittestEnabled": true,			
+				"pylint.lintOnChange": true,
+				"markdown-preview-github-styles.colorTheme": "light",
+				"files.exclude": {
+					"**/.git": true,
+					"**/.DS_Store": true,
+					"**/*.pyc": true,
+					"**/__pycache__": true,
+					"**/.pytest_cache": true
+				}
+			},
 			"extensions": [
 				"VisualStudioExptTeam.vscodeintellicode",
 				"ms-python.python",

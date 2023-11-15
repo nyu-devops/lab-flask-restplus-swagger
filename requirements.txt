@@ -1,9 +1,9 @@
 # Pinned dependencies that cause breakage
-Werkzeug==2.3.3
+Werkzeug==3.0.1
 urllib3==1.26.15
 
 # Runtime dependencies
-Flask==2.3.2
+Flask==2.3.3
 flask-restx==1.1.0
 cloudant==2.15.0
 retry2==0.9.5
@@ -14,14 +14,17 @@ gunicorn==20.1.0
 honcho==1.1.0
 
 # Code quality
-pylint==2.16.2
-flake8==6.0.0
-black==23.1.0
+pylint==2.17.5
+flake8==6.1.0
+black==23.7.0
 
 # Testing dependencies
-green==3.4.3
+pytest==7.4.0
+pytest-pspec==0.0.4
+pytest-cov==4.1.0
+coverage==7.3.0
 factory-boy==3.2.1
-coverage==7.1.0
+green==3.4.3
 
 # Utilities
-httpie==3.2.1
+httpie==3.2.2
