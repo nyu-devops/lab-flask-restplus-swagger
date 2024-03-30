@@ -20,12 +20,11 @@ This module contains the microservice code for
     service
     models
 """
-import os
 import sys
-import logging
 from flask import Flask
 from flask_restx import Api
 from service.common import log_handlers
+from service import config
 
 # NOTE: Do not change the order of this code
 # The Flask app must be created
@@ -33,13 +32,10 @@ from service.common import log_handlers
 
 # Create the Flask app
 app = Flask(__name__)
+app.config.from_object(config)
 
+# Turn off strict slashes because it violates best practices
 app.url_map.strict_slashes = False
-
-app.config["SECRET_KEY"] = "secret-for-dev"
-app.config["LOGGING_LEVEL"] = logging.INFO
-app.config["API_KEY"] = os.getenv("API_KEY")
-app.config["ERROR_404_HELP"] = False
 
 # Document the type of authorization required
 authorizations = {
