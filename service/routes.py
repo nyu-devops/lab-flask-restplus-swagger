@@ -320,11 +320,6 @@ def abort(error_code: int, message: str):
     api.abort(error_code, message)
 
 
-def init_db(dbname="pets"):
-    """Initialize the model"""
-    Pet.init_db(dbname)
-
-
 def data_reset():
     """Removes all Pets from the database"""
     Pet.remove_all()

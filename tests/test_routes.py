@@ -362,10 +362,10 @@ class TestPetActions(BaseTestCase):
     #  P A T C H   A N D   M O C K   T E S T   C A S E S
     ######################################################################
 
-    @patch("cloudant.client.Cloudant.__init__")
-    def test_connection_error(self, bad_mock):
-        """It should Test Connection error handler"""
-        bad_mock.side_effect = DatabaseConnectionError()
-        app.config["FLASK_ENV"] = "production"
-        self.assertRaises(DatabaseConnectionError, routes.init_db, "test")
-        app.config["FLASK_ENV"] = "development"
+    # @patch("cloudant.client.Cloudant.__init__")
+    # def test_connection_error(self, bad_mock):
+    #     """It should Test Connection error handler"""
+    #     bad_mock.side_effect = DatabaseConnectionError()
+    #     app.config["FLASK_ENV"] = "production"
+    #     self.assertRaises(DatabaseConnectionError, routes.init_db, "test")
+    #     app.config["FLASK_ENV"] = "development"
