@@ -11,7 +11,7 @@ services:
       - ..:/app
     command: sleep infinity
     environment:
-      FLASK_APP: service:app
+      FLASK_APP: wsgi:app
       FLASK_DEBUG: "True"
       CLOUDANT_HOST: couchdb
       CLOUDANT_PORT: 5984

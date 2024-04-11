@@ -52,9 +52,9 @@ CLOUDANT_USERNAME = os.getenv("CLOUDANT_USERNAME", "admin")
 CLOUDANT_PASSWORD = os.getenv("CLOUDANT_PASSWORD", "pass")
 
 # global variables for retry (must be int)
-RETRY_COUNT = int(os.getenv("RETRY_COUNT", 10))
-RETRY_DELAY = int(os.getenv("RETRY_DELAY", 1))
-RETRY_BACKOFF = int(os.getenv("RETRY_BACKOFF", 2))
+RETRY_COUNT = int(os.getenv("RETRY_COUNT", "10"))
+RETRY_DELAY = int(os.getenv("RETRY_DELAY", "1"))
+RETRY_BACKOFF = int(os.getenv("RETRY_BACKOFF", "2"))
 
 
 class DatabaseConnectionError(Exception):

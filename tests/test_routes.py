@@ -25,11 +25,12 @@ nosetests --stop tests/test_service.py:TestPetServer
 
 import logging
 from unittest import TestCase
-from unittest.mock import patch
+# from unittest.mock import patch
 from urllib.parse import quote_plus
-from service import app, routes
+from wsgi import app
+from service import routes
 from service.common import status
-from service.models import DatabaseConnectionError
+# from service.models import DatabaseConnectionError
 from tests.factories import PetFactory
 
 # Disable all but critical errors during normal test run
