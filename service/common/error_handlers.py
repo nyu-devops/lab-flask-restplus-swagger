@@ -20,7 +20,8 @@ Error handlers
 Handles all of the HTTP Error Codes returning JSON messages
 """
 
-from service import app, api
+from flask import current_app as app  # Import Flask application
+from service import api
 from service.models import DataValidationError, DatabaseConnectionError
 from . import status
 

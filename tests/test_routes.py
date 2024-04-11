@@ -25,11 +25,12 @@ nosetests --stop tests/test_service.py:TestPetServer
 
 import logging
 from unittest import TestCase
-from unittest.mock import patch
+# from unittest.mock import patch
 from urllib.parse import quote_plus
-from service import app, routes
+from wsgi import app
+from service import routes
 from service.common import status
-from service.models import DatabaseConnectionError
+# from service.models import DatabaseConnectionError
 from tests.factories import PetFactory
 
 # Disable all but critical errors during normal test run
@@ -104,20 +105,20 @@ class TestPetRoutes(BaseTestCase):
     """Pet Service Routes tests"""
 
     def test_index(self):
-        """Test the index page"""
+        """It should return the index page"""
         resp = self.app.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIn(b"Pet Shop", resp.data)
 
     def test_get_pet_list(self):
-        """Get a list of Pets"""
+        """It should Get a list of Pets"""
         self._create_pets(5)
         resp = self.app.get(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertTrue(len(resp.data) > 0)
 
     def test_get_pet(self):
-        """get a single Pet"""
+        """It should Get a single Pet"""
         test_pet = self._create_pets()[0]
         resp = self.app.get(f"{BASE_URL}/{test_pet.id}", content_type=CONTENT_TYPE_JSON)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -126,7 +127,7 @@ class TestPetRoutes(BaseTestCase):
         self.assertEqual(data["name"], test_pet.name)
 
     def test_get_pet_not_found(self):
-        """Get a Pet that doesn't exist"""
+        """It should not Get a Pet that doesn't exist"""
         resp = self.app.get(f"{BASE_URL}/foo")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
         data = resp.get_json()
@@ -134,7 +135,7 @@ class TestPetRoutes(BaseTestCase):
         self.assertIn("was not found", data["message"])
 
     def test_create_pet(self):
-        """Create a new Pet"""
+        """It should Create a new Pet"""
         test_pet = PetFactory()
         logging.debug("Test Pet: %s", test_pet.serialize())
         resp = self.app.post(
@@ -168,7 +169,7 @@ class TestPetRoutes(BaseTestCase):
         self.assertEqual(new_pet["birthday"], test_pet.birthday.isoformat())
 
     def test_update_pet(self):
-        """Update a Pet"""
+        """It should Update a Pet"""
         # create a pet to update
         test_pet = PetFactory()
         resp = self.app.post(
@@ -194,7 +195,7 @@ class TestPetRoutes(BaseTestCase):
         self.assertEqual(updated_pet["category"], "unknown")
 
     def test_update_pet_with_no_name(self):
-        """Update a Pet without assigning a name"""
+        """It should not Update a Pet without assigning a name"""
         pet = self._create_pets()[0]
         pet_data = pet.serialize()
         del pet_data["name"]
@@ -207,7 +208,7 @@ class TestPetRoutes(BaseTestCase):
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_pet_not_found(self):
-        """Update a Pet that doesn't exist"""
+        """It should not Update a Pet that doesn't exist"""
         resp = self.app.put(
             f"{BASE_URL}/foo",
             json={},
@@ -217,7 +218,7 @@ class TestPetRoutes(BaseTestCase):
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_pet_not_authorized(self):
-        """Update a Pet Not Authorized"""
+        """It should not Update a Pet if Not Authorized"""
         pet = self._create_pets()[0]
         pet_data = pet.serialize()
         del pet_data["name"]
@@ -225,7 +226,7 @@ class TestPetRoutes(BaseTestCase):
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_pet(self):
-        """Delete a Pet"""
+        """It should Delete a Pet"""
         pets = self._create_pets(5)
         pet_count = self._get_pet_count()
         test_pet = pets[0]
@@ -239,7 +240,7 @@ class TestPetRoutes(BaseTestCase):
         self.assertEqual(new_count, pet_count - 1)
 
     def test_delete_all_pet(self):
-        """Delete All Pets under test only"""
+        """It should Delete All Pets under test only"""
         self._create_pets(1)
         app.config["TESTING"] = False
         resp = self.app.delete(BASE_URL, headers=self.headers)
@@ -247,7 +248,7 @@ class TestPetRoutes(BaseTestCase):
         app.config["TESTING"] = True
 
     def test_create_pet_with_no_name(self):
-        """Create a Pet without a name"""
+        """It should not Create a Pet without a name"""
         pet = self._create_pets()[0]
         new_pet = pet.serialize()
         del new_pet["name"]
@@ -258,19 +259,19 @@ class TestPetRoutes(BaseTestCase):
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_pet_no_content_type(self):
-        """Create a Pet with no Content-Type"""
+        """It should not Create a Pet with no Content-Type"""
         resp = self.app.post(BASE_URL, data="bad data", headers=self.headers)
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_create_pet_wrong_content_type(self):
-        """Create a Pet with wrong Content-Type"""
+        """It should not Create a Pet with wrong Content-Type"""
         resp = self.app.post(
             BASE_URL, data={}, content_type="plain/text", headers=self.headers
         )
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_call_create_with_an_id(self):
-        """Call create passing an id"""
+        """It should not create passing an id"""
         resp = self.app.post(f"{BASE_URL}/foo", json={}, headers=self.headers)
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -279,7 +280,7 @@ class TestPetQuery(BaseTestCase):
     """Pet Service Query tests"""
 
     def test_query_by_name(self):
-        """Query Pets by name"""
+        """It should Query Pets by name"""
         pets = self._create_pets(5)
         test_name = pets[0].name
         name_count = len([pet for pet in pets if pet.name == test_name])
@@ -292,7 +293,7 @@ class TestPetQuery(BaseTestCase):
             self.assertEqual(pet["name"], test_name)
 
     def test_query_by_category(self):
-        """Query Pets by category"""
+        """It should Query Pets by category"""
         pets = self._create_pets(5)
         test_category = pets[0].category
         category_count = len([pet for pet in pets if pet.category == test_category])
@@ -309,44 +310,27 @@ class TestPetQuery(BaseTestCase):
     # test_query_by_availability() does not work because of the way CouchDB
     # handles deletions. Need to upgrade to newer ibmcloudant library
 
-    # def test_query_by_availability(self):
-    #     """Query Pets by availability"""
-    #     pets = self._create_pets(10)
-    #     available_pets = [pet for pet in pets if pet.available is True]
-    #     unavailable_pets = [pet for pet in pets if pet.available is False]
-    #     available_count = len(available_pets)
-    #     unavailable_count = len(unavailable_pets)
-    #     logging.debug("Available Pets [%d] %s", available_count, available_pets)
-    #     logging.debug("Unavailable Pets [%d] %s", unavailable_count, unavailable_pets)
-
-    #     # test for available
-    #     resp = self.app.get(
-    #         BASE_URL, query_string="available=true"
-    #     )
-    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
-    #     data = resp.get_json()
-    #     self.assertEqual(len(data), available_count)
-    #     # check the data just to be sure
-    #     for pet in data:
-    #         self.assertEqual(pet["available"], True)
-
-    #     # test for unavailable
-    #     resp = self.app.get(
-    #         BASE_URL, query_string="available=false"
-    #     )
-    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
-    #     data = resp.get_json()
-    #     self.assertEqual(len(data), unavailable_count)
-    #     # check the data just to be sure
-    #     for pet in data:
-    #         self.assertEqual(pet["available"], False)
+    def test_query_by_availability(self):
+        """It should Query Pets by availability"""
+        pets = self._create_pets(5)
+        test_available = pets[0].available
+        available_count = len([pet for pet in pets if pet.available == test_available])
+        resp = self.app.get(
+            BASE_URL, query_string=f"available={test_available}"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), available_count)
+        # check the data just to be sure
+        for pet in data:
+            self.assertEqual(pet["available"], test_available)
 
 
 class TestPetActions(BaseTestCase):
     """Pet Service Action tests"""
 
     def test_purchase_a_pet(self):
-        """Purchase a Pet"""
+        """It should Purchase a Pet"""
         pets = self._create_pets(10)
         available_pets = [pet for pet in pets if pet.available is True]
         pet = available_pets[0]
@@ -361,7 +345,7 @@ class TestPetActions(BaseTestCase):
         self.assertEqual(data["available"], False)
 
     def test_purchase_not_available(self):
-        """Purchase a Pet that is not available"""
+        """It should not Purchase a Pet that is not available"""
         pets = self._create_pets(10)
         unavailable_pets = [pet for pet in pets if pet.available is False]
         pet = unavailable_pets[0]
@@ -371,7 +355,7 @@ class TestPetActions(BaseTestCase):
         self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
 
     def test_purchase_does_not_exist(self):
-        """Purchase a Pet that doesn't exist"""
+        """It should not Purchase a Pet that doesn't exist"""
         resp = self.app.put(f"{BASE_URL}/0/purchase", content_type=CONTENT_TYPE_JSON)
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -379,10 +363,10 @@ class TestPetActions(BaseTestCase):
     #  P A T C H   A N D   M O C K   T E S T   C A S E S
     ######################################################################
 
-    @patch("cloudant.client.Cloudant.__init__")
-    def test_connection_error(self, bad_mock):
-        """Test Connection error handler"""
-        bad_mock.side_effect = DatabaseConnectionError()
-        app.config["FLASK_ENV"] = "production"
-        self.assertRaises(DatabaseConnectionError, routes.init_db, "test")
-        app.config["FLASK_ENV"] = "development"
+    # @patch("cloudant.client.Cloudant.__init__")
+    # def test_connection_error(self, bad_mock):
+    #     """It should Test Connection error handler"""
+    #     bad_mock.side_effect = DatabaseConnectionError()
+    #     app.config["FLASK_ENV"] = "production"
+    #     self.assertRaises(DatabaseConnectionError, routes.init_db, "test")
+    #     app.config["FLASK_ENV"] = "development"

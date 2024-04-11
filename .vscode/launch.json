@@ -6,8 +6,8 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "service:app",
-                "FLASK_ENV": "development"
+                "FLASK_APP": "wsgi:app",
+                "FLASK_DEBUG": "True"
             },
             "args": [
                 "run",

@@ -31,10 +31,11 @@ DELETE /pets/{id} - deletes a Pet record in the database
 import secrets
 from functools import wraps
 from flask import request
+from flask import current_app as app  # Import Flask application
 from flask_restx import Resource, fields, reqparse, inputs
 from service.models import Pet, Gender
 from service.common import status  # HTTP Status Codes
-from . import app, api
+from . import api
 
 
 ######################################################################
@@ -318,11 +319,6 @@ def abort(error_code: int, message: str):
     """Logs errors before aborting"""
     app.logger.error(message)
     api.abort(error_code, message)
-
-
-def init_db(dbname="pets"):
-    """Initialize the model"""
-    Pet.init_db(dbname)
 
 
 def data_reset():
