@@ -12,6 +12,9 @@ unittests.xml
 .scannerwork/
 .sonarlint/
 
+# PyTest
+.pytest_cache/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

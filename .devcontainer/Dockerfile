@@ -1,12 +1,11 @@
 # Image for a Python 3 development environment
 FROM python:3.11-slim
 
-# Add any tools that are needed beyond Python 3.9
-RUN apt-get update \
-    && apt-get install -y sudo git make zip tree curl wget jq \
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
+# Add any tools that are needed beyond Python 3.11
+RUN apt-get update && \
+    apt-get install -y sudo vim make git zip tree curl wget jq procps net-tools && \
+    apt-get autoremove -y && \
+    apt-get clean -y
 
 # Create a user for development
 ARG USERNAME=devops

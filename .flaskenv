@@ -1,2 +1,2 @@
 FLASK_RUN_PORT=8080
-FLASK_APP=service:app
+FLASK_APP=wsgi:app
