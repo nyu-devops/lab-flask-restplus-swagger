@@ -8,14 +8,21 @@
 	"customizations": {
 		"vscode": {
 			"settings": {
+				"cSpell.words": [
+					"sqlalchemy",
+					"psycopg",
+					"pytest",
+					"virtualenvs"
+				],
 				"[python]": {
 					"editor.defaultFormatter": "ms-python.black-formatter",
 					"editor.formatOnSave": true
 				},
+				"git.mergeEditor": true,
 				"markdown-preview-github-styles.colorTheme": "light",
 				"makefile.extensionOutputFolder": "/tmp",
 				"python.testing.unittestEnabled": false,
-				"python.testing.pytestEnabled": true,			
+				"python.testing.pytestEnabled": true,
 				"python.testing.pytestArgs": [
 					"tests"
 				],
@@ -31,29 +38,29 @@
 				"VisualStudioExptTeam.vscodeintellicode",
 				"ms-python.python",
 				"ms-python.vscode-pylance",
+				"ms-python.debugpy",
 				"ms-python.pylint",
 				"ms-python.flake8",
 				"ms-python.black-formatter",
+				"njpwerner.autodocstring",
+				"wholroyd.jinja",
 				"cstrap.flask-snippets",
+				"ms-vscode.makefile-tools",
 				"yzhang.markdown-all-in-one",
 				"bierner.github-markdown-preview",
-				"hnw.vscode-auto-open-markdown-preview",
 				"davidanson.vscode-markdownlint",
+				"hnw.vscode-auto-open-markdown-preview",
 				"bierner.markdown-preview-github-styles",
 				"tamasfe.even-better-toml",
 				"donjayamanne.githistory",
 				"GitHub.vscode-pull-request-github",
 				"hbenl.vscode-test-explorer",
 				"LittleFoxTeam.vscode-python-test-adapter",
-				"njpwerner.autodocstring",
-				"wholroyd.jinja",
 				"redhat.vscode-yaml",
 				"rangav.vscode-thunder-client",
-				"redhat.fabric8-analytics",
-				"streetsidesoftware.code-spell-checker",
 				"ms-azuretools.vscode-docker",
 				"github.vscode-github-actions",
-				"streetsidesoftware.code-spell-checker",				
+				"streetsidesoftware.code-spell-checker",
 				"bbenoist.vagrant"
 			]
 		}

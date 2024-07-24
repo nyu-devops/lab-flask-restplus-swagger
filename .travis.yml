@@ -2,7 +2,7 @@ sudo: required
 
 language: python
 python:
-  - '3.7'
+  - '3.11'
 
 services:
   - docker
@@ -15,17 +15,20 @@ before_install:
   - docker ps -a
 
 env:
-  - BINDING_CLOUDANT='{"username": "admin","password": "pass","host": "localhost","port": 5984,"url": "http://admin:pass@localhost:5984"}'
+  - BINDING_CLOUDANT='{"username":"admin","password":"pass","host":"localhost","port":5984,"url":"http://admin:pass@localhost:5984"}'
 
 # command to install dependencies
-install: pip install -r requirements.txt
+install: 
+  - python -m pip install -U pip poetry
+  - poetry config virtualenvs.create false
+  - poetry install
 
 before_script:
   - curl -X GET http://localhost:5984/
   - curl -X PUT http://admin:pass@localhost:5984/test
 
 script:
-  - nosetests
+  - pytest
 
 after_success:
   - codecov
