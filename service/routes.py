@@ -32,10 +32,27 @@ import secrets
 from functools import wraps
 from flask import request
 from flask import current_app as app  # Import Flask application
-from flask_restx import Resource, fields, reqparse, inputs
+from flask_restx import Api, Resource, fields, reqparse, inputs
 from service.models import Pet, Gender
 from service.common import status  # HTTP Status Codes
-from . import api
+
+# Document the type of authorization required
+authorizations = {"apikey": {"type": "apiKey", "in": "header", "name": "X-Api-Key"}}
+
+######################################################################
+# Configure Swagger before initializing it
+######################################################################
+api = Api(
+    app,
+    version="1.0.0",
+    title="Pet Demo REST API Service",
+    description="This is a sample server Pet store server.",
+    default="pets",
+    default_label="Pet shop operations",
+    doc="/apidocs",  # default also could use doc='/apidocs/'
+    authorizations=authorizations,
+    prefix="/api",
+)
 
 
 ######################################################################
@@ -56,13 +73,9 @@ create_model = api.model(
             required=True,
             description="The category of Pet (e.g., dog, cat, fish, etc.)",
         ),
-        "available": fields.Boolean(
-            required=True, description="Is the Pet available for purchase?"
-        ),
+        "available": fields.Boolean(required=True, description="Is the Pet available for purchase?"),
         # pylint: disable=protected-access
-        "gender": fields.String(
-            enum=Gender._member_names_, description="The gender of the Pet"
-        ),
+        "gender": fields.String(enum=Gender._member_names_, description="The gender of the Pet"),
         "birthday": fields.Date(required=True, description="The day the pet was born"),
     },
 )
@@ -71,20 +84,14 @@ pet_model = api.inherit(
     "PetModel",
     create_model,
     {
-        "_id": fields.String(
-            readOnly=True, description="The unique id assigned internally by service"
-        ),
+        "_id": fields.String(readOnly=True, description="The unique id assigned internally by service"),
     },
 )
 
 # query string arguments
 pet_args = reqparse.RequestParser()
-pet_args.add_argument(
-    "name", type=str, location="args", required=False, help="List Pets by name"
-)
-pet_args.add_argument(
-    "category", type=str, location="args", required=False, help="List Pets by category"
-)
+pet_args.add_argument("name", type=str, location="args", required=False, help="List Pets by name")
+pet_args.add_argument("category", type=str, location="args", required=False, help="List Pets by category")
 pet_args.add_argument(
     "available",
     type=inputs.boolean,
