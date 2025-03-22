@@ -6,11 +6,10 @@ FROM python:3.11-slim
 # Establish a working folder
 WORKDIR /app
 
-# Establish dependencies
-COPY pyproject.toml poetry.lock ./
-RUN python -m pip install poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install --without dev
+# Establish dependencies without dev tools
+COPY Pipfile Pipfile.lock ./
+RUN python -m pip install -U pip pipenv && \
+    pipenv install --system
 
 # Copy source files last because they change the most
 COPY wsgi.py .
@@ -23,7 +22,7 @@ USER flask
 
 # Expose any ports the app is expecting in the environment
 ENV FLASK_APP=wsgi:app
-ENV PORT 8080
+ENV PORT=8080
 EXPOSE $PORT
 
 ENV GUNICORN_BIND 0.0.0.0:$PORT
