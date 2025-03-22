@@ -15,7 +15,7 @@ cloudant = "^2.15.0"
 urllib3 = "1.26.19" # DO NOT upgrade this!
 retry2 = "^0.9.5"
 python-dotenv = "^1.0.1"
-gunicorn = "^22.0.0"
+gunicorn = "^23.0.0"
 
 [tool.poetry.group.dev.dependencies]
 honcho = "^1.1.0"
