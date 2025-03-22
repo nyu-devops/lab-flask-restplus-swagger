@@ -1,6 +1,7 @@
 """
 Global Configuration for Application
 """
+
 import os
 import logging
 
@@ -16,4 +17,4 @@ SECRET_KEY = os.getenv("SECRET_KEY", "sup3r-s3cr3t-for-dev")
 API_KEY = os.getenv("API_KEY")
 
 # Turn off helpful error messages that interfere with REST API messages
-ERROR_404_HELP = False
+RESTX_ERROR_404_HELP = False

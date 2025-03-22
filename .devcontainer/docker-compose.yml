@@ -22,7 +22,7 @@ services:
     depends_on:
       - couchdb
 
-  # CouchDB Dashboard: http://127.0.0.1:5984/_utils"
+  # The CouchDB Dashboard is at: http://127.0.0.1:5984/_utils"
   couchdb:
     image: couchdb:latest
     hostname: couchdb

@@ -1,7 +1,10 @@
 # lab-flask-restplus-swagger
 
-[![Build Status](https://travis-ci.org/nyu-devops/lab-flask-restplus-swagger.svg?branch=master)](https://travis-ci.org/nyu-devops/lab-flask-restplus-swagger)
-[![Codecov](https://img.shields.io/codecov/c/github/nyu-devops/lab-flask-restplus-swagger.svg)]()
+[![Build Status](https://github.com/nyu-devops/lab-flask-restplus-swagger/actions/workflows/build.yml/badge.svg)](https://github.com/nyu-devops/lab-flask-restplus-swagger/actions)
+[![codecov](https://codecov.io/gh/nyu-devops/lab-flask-restplus-swagger/branch/master/graph/badge.svg?token=y6OUlCB4bC)](https://codecov.io/gh/nyu-devops/lab-flask-restplus-swagger)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-red.svg)](https://www.python.org/)
+[![Open in Remote - Containers](https://img.shields.io/static/v1?label=Remote%20-%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nyu-devops/lab-flask-restplus-swagger)
 
 **NYU DevOps** lab that demonstrates how to use [Flask-RESTX](https://flask-restx.readthedocs.io/en/latest/) to generate [Swagger](http://swagger.io)/[OpenAPI](https://www.openapis.org) documentation for your [Python](https://www.python.org) [Flask](http://flask.pocoo.org) application. This repository is part of lab for the NYU DevOps class [CSCI-GA.2820-001](https://cs.nyu.edu/courses/spring21/CSCI-GA.2820-001/), Graduate Division, Computer Science
 
@@ -9,79 +12,45 @@
 
 When developing microservices with API's that others are going to call, it is critically important to provide the proper API documentation. OpenAPI has become a standard for documenting APIs and Swagger is an implementation of this. This lab shows you how to use a Flask plug-in called **Flask-RESTX** which is a fork of the original **Flask-RESTPlus** that is no longer maintained, to imbed Swagger documentation into your Python Flask microservice so that the Swagger docs are generated for you.
 
-I feel that it is much better to include the documentation with the code because programmers are more likely to update the docs if it's right there above the code they are working on. (...at least that's the therory and I'm sticking to it) ;-)
+I feel that it is much better to include the documentation with the code because programmers are more likely to update the docs if it's right there above the code they are working on. (...at least that's the theory and I'm sticking to it) ;-)
 
-## Prerequisite Installation using Vagrant
+### Prerequisite Installation
 
-The easiest way to use this lab is with Vagrant and VirtualBox. If you don't have this software the first step is down download and install it. If you have an 2020 Apple Mac with the M1 chip, you should download Docker Desktop instead of VirtualBox. Here is what you need:
+All of our development is done in Docker containers using **Visual Studio Code**. This project contains a `.devcontainer` folder that will set up a Docker environment in VSCode for you. You will need the following:
 
-Download: [Vagrant](https://www.vagrantup.com/)
+- Docker Desktop for [Mac](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
+- Microsoft Visual Studio Code ([VSCode](https://code.visualstudio.com/download))
+- [Remote Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) VSCode Extension
 
-Intel Download: [VirtualBox](https://www.virtualbox.org/)
+It is a good idea to add VSCode to your path so that you can invoke it from the command line. To do this, open VSCode and type `Shift+Command+P` on Mac or `Shift+Ctrl+P` on Windows to open the command pallet and then search for "shell" and select the option **Shell Command: Install 'code' command in Path**. This will install VSCode in your path.
 
-Apple M1 Download: [Apple M1 Tech Preview](https://docs.docker.com/docker-for-mac/apple-m1/)
-
-Install each of those. Then all you have to do is clone this repo and invoke vagrant:
-
-### Using Vagrant and VirtualBox (Intel only)
-
-If you have an Intel Mac or Windows PC you can use these steps:
+Then you can start your development environment up with:
 
 ```bash
-$ git clone https://github.com/nyu-devops/lab-flask-restplus-swagger.git
-$ cd lab-flask-restplus-swagger
-$ vagrant up
-$ vagrant ssh
-$ cd /vagrant
+    git clone https://github.com/nyu-devops/lab-flask-restplus-swagger.git
+    cd lab-flask-restplus-swagger
+    code .
 ```
 
-### Using Vagrant and Docker Desktop
+The first time it will build the Docker image but after that it will just create a container and place you inside of it in your `/app` folder which actually contains the repo shared from your computer. It will also install all of the VSCode extensions needed for Python development.
 
-If you have an Apple M1 Silicon Mac or other ARM
-based computer, or if you just want to use Docker as a provider instead of VirtualBox, you can use these steps:
-
-This is useful for owners of Apple M1 Silicon Macs which cannot run VirtualBox because they have a CPU based on ARM architecture instead of Intel.
-
-Just add `--provider docker` to the `vagrant up` command like this:
-
-```bash
-$ git clone https://github.com/nyu-devops/lab-flask-restplus-swagger.git
-$ cd lab-flask-restplus-swagger
-$ vagrant up --provider docker
-$ vagrant ssh
-$ cd /vagrant
-```
-
-This will use a Docker container instead of a Virtual Machine (VM). Everything else should be the same.
+If it does not automatically prompt you to open the project in a container, you can select the green icon at the bottom left of your VSCode UI and select: **Remote Containers: Reopen in Container**.
 
 ## Running the code
 
-You can now run `green` to run the tests and make sure that everything works as expected.
+You can now run `pytest` to run the tests and make sure that everything works as expected.
 
 ```bash
-$ green
+make test
 ```
 
 You can then run the server with:
 
 ```bash
-$ honcho start
+honcho start
 ```
 
 Finally you can see the microservice Swagger docs at: [http://localhost:8080/](http://localhost:8080/)
-
-When you are done, you can exit and shut down the VM with:
-
-```bash
-$ exit
-$ vagrant halt
-```
-
-If the VM is no longer needed you can remove it with:
-
-```bash
-$ vagrant destroy
-```
 
 ## What's featured in the project?
 
@@ -90,4 +59,10 @@ $ vagrant destroy
     * tests/test_routes.py -- test cases using unittest for the microservice
     * tests/test_models.py -- test cases using unittest for the Pet model
 
-This repository is part of the NYU graduate class **CSCI-GA.2810-001: DevOps and Agile Methodologies** taught by [John Rofrano](http://www.johnrofrano.com/), Adjunct Instructor, NYU Curant Institute, Graduate Division, Computer Science and at Stern Business School.
+## License
+
+Copyright (c) 2021, 2025 John Rofrano. All rights reserved.
+
+Licensed under the Apache License. See [LICENSE](LICENSE)
+
+This repository is part of the NYU graduate class **CSCI-GA.2810-001: DevOps and Agile Methodologies** taught by [John Rofrano](http://www.johnrofrano.com/), Adjunct Instructor, NYU Courant Institute, Graduate Division, Computer Science and at Stern Business School.

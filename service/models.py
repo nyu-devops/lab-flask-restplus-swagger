@@ -84,7 +84,7 @@ class Pet:
     client: Cloudant = None
     database: CloudantDatabase = None
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-positional-arguments too-many-arguments
     def __init__(
         self,
         name: str = None,
@@ -185,13 +185,20 @@ class Pet:
             if isinstance(data["available"], bool):
                 self.available = data["available"]
             else:
-                raise DataValidationError("Invalid type for boolean [available]: " + str(type(data["available"])))
+                raise DataValidationError(
+                    "Invalid type for boolean [available]: "
+                    + str(type(data["available"]))
+                )
             self.gender = getattr(Gender, data["gender"])  # create enum from string
             self.birthday = date.fromisoformat(data["birthday"])
         except KeyError as error:
-            raise DataValidationError("Invalid pet: missing " + error.args[0]) from error
+            raise DataValidationError(
+                "Invalid pet: missing " + error.args[0]
+            ) from error
         except TypeError as error:
-            raise DataValidationError("Invalid pet: body of request contained bad or no data") from error
+            raise DataValidationError(
+                "Invalid pet: body of request contained bad or no data"
+            ) from error
 
         # if there is no id and the data has one, assign it
         if not self.id and "_id" in data:
@@ -424,7 +431,9 @@ class Pet:
             )
 
         except ConnectionError as exc:
-            raise DatabaseConnectionError("Cloudant service could not be reached") from exc
+            raise DatabaseConnectionError(
+                "Cloudant service could not be reached"
+            ) from exc
 
         # Create database if it doesn't exist
         try:
