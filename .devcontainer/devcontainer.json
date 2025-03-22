@@ -4,14 +4,21 @@
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/app",
-	"remoteUser": "devops",
+	"remoteUser": "vscode",
 	"customizations": {
 		"vscode": {
 			"settings": {
 				"cSpell.words": [
-					"sqlalchemy",
-					"psycopg",
+					"wsgi",
+					"Coudant",
+					"CLOUDANT",
+					"DBNAME",
+					"petshop",
 					"pytest",
+					"restplus",
+					"RESTX",
+					"CSCI",
+					"pipenv",
 					"virtualenvs"
 				],
 				"[python]": {
@@ -47,8 +54,8 @@
 				"cstrap.flask-snippets",
 				"ms-vscode.makefile-tools",
 				"yzhang.markdown-all-in-one",
-				"bierner.github-markdown-preview",
 				"davidanson.vscode-markdownlint",
+				"bierner.github-markdown-preview",
 				"hnw.vscode-auto-open-markdown-preview",
 				"bierner.markdown-preview-github-styles",
 				"tamasfe.even-better-toml",
@@ -57,7 +64,7 @@
 				"hbenl.vscode-test-explorer",
 				"LittleFoxTeam.vscode-python-test-adapter",
 				"redhat.vscode-yaml",
-				"rangav.vscode-thunder-client",
+				"unjinjang.rest-api-client",
 				"ms-azuretools.vscode-docker",
 				"github.vscode-github-actions",
 				"streetsidesoftware.code-spell-checker",
