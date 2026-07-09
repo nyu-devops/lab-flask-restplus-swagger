@@ -12,12 +12,11 @@ all: help
 
 venv: ## Create a Python virtual environment
 	$(info Creating Python 3 virtual environment...)
-	poetry shell
+	pipenv --python 3
 
 install: ## Install Python dependencies
 	$(info Installing dependencies...)
-	poetry config virtualenvs.create false
-	poetry install
+	pipenv install --system --dev
 
 lint: ## Run the linter
 	$(info Running linting...)

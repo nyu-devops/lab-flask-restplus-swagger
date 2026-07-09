@@ -2,7 +2,7 @@
 FROM rofrano/nyu-devops-base:su26
 
 # Install GitHub CLI
-RUN sudo apt-get update && sudo apt-get install -y gh
+RUN sudo apt-get update && sudo apt-get install -y gpg gh
 
 # Install claude code
 RUN curl -fsSL https://claude.ai/install.sh | bash
