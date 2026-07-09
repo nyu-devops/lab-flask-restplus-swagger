@@ -68,11 +68,15 @@
 				"ms-azuretools.vscode-docker",
 				"github.vscode-github-actions",
 				"streetsidesoftware.code-spell-checker",
-				"bbenoist.vagrant"
+				"bbenoist.vagrant",
+				"Anthropic.claude-code"
 			]
 		}
 	},
 	// Create .env file if it doesn't exist
 	"postCreateCommand": "if [ ! -f .env ]; then cp dot-env-example .env; fi;",
 	"forwardPorts": [8080]
+	// "features": {
+	// 	"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+	// }	
 }
