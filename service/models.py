@@ -33,8 +33,11 @@ Docker Note:
     You can also use Docker volumes like this: -v couchdb_data:/opt/couchdb/data
 """
 
+from __future__ import annotations
 import os
 import json
+from typing import Any, Dict, List
+
 import logging
 from enum import Enum
 from datetime import date
@@ -92,7 +95,7 @@ class Pet:
         available: bool = True,
         gender: Gender = Gender.UNKNOWN,
         birthday: date = date.today(),
-    ):
+    ) -> None:
         """Constructor"""
         self.id = None  # pylint: disable=invalid-name
         self.name = name
@@ -111,7 +114,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def create(self):
+    def create(self) -> None:
         """
         Creates a new Pet in the database
         """
@@ -134,7 +137,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def update(self):
+    def update(self) -> None:
         """Updates a Pet in the database"""
         try:
             document = self.database[self.id]  # pylint: disable=unsubscriptable-object)
@@ -151,7 +154,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def delete(self):
+    def delete(self) -> None:
         """Deletes a Pet from the database"""
         try:
             document = self.database[self.id]  # pylint: disable=unsubscriptable-object)
@@ -173,7 +176,7 @@ class Pet:
             pet["_id"] = self.id
         return pet
 
-    def deserialize(self, data: dict) -> None:
+    def deserialize(self, data: dict) -> "Pet":
         """deserializes a Pet my marshalling the data.
 
         :param data: a Python dictionary representing a Pet.
@@ -211,12 +214,12 @@ class Pet:
     ######################################################################
 
     @classmethod
-    def connect(cls):
+    def connect(cls) -> None:
         """Connect to the server"""
         cls.client.connect()
 
     @classmethod
-    def disconnect(cls):
+    def disconnect(cls) -> None:
         """Disconnect from the server"""
         cls.client.disconnect()
 
@@ -228,7 +231,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def create_query_index(cls, field_name: str, order: str = "asc"):
+    def create_query_index(cls, field_name: str, order: str = "asc") -> None:
         """Creates a new query index for searching"""
         cls.database.create_query_index(
             index_name=field_name, fields=[{field_name: order}]
@@ -242,7 +245,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def remove_all(cls):
+    def remove_all(cls) -> None:
         """Removes all documents from the database (use for testing)"""
         for document in cls.database:  # pylint: disable=(not-an-iterable
             document.delete()
@@ -255,7 +258,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def all(cls):
+    def all(cls) -> List["Pet"]:
         """Query that returns all Pets"""
         results = []
         for doc in cls.database:  # pylint: disable=not-an-iterable
@@ -276,7 +279,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def find_by(cls, **kwargs):
+    def find_by(cls, **kwargs) -> List["Pet"]:
         """Find records using selector"""
         query = Query(cls.database, selector=kwargs)
         results = []
@@ -294,7 +297,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def find(cls, pet_id: str):
+    def find(cls, pet_id: str) -> "Pet" | None:
         """Query that finds Pets by their id"""
         try:
             document = cls.database[pet_id]  # pylint: disable=unsubscriptable-object
@@ -314,7 +317,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def find_by_name(cls, name: str):
+    def find_by_name(cls, name: str) -> List["Pet"]:
         """Query that finds Pets by their name"""
         return cls.find_by(name=name)
 
@@ -326,7 +329,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def find_by_category(cls, category: str):
+    def find_by_category(cls, category: str) -> List["Pet"]:
         """Query that finds Pets by their category"""
         return cls.find_by(category=category)
 
@@ -338,7 +341,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def find_by_availability(cls, available: bool = True):
+    def find_by_availability(cls, available: bool = True) -> List["Pet"]:
         """Query that finds Pets by their availability"""
         return cls.find_by(available=available)
 
@@ -350,7 +353,7 @@ class Pet:
         tries=RETRY_COUNT,
         logger=logger,
     )
-    def find_by_gender(cls, gender: str = Gender.UNKNOWN.name):
+    def find_by_gender(cls, gender: str = Gender.UNKNOWN.name) -> List["Pet"]:
         """Query that finds Pets by their gender as a string"""
         return cls.find_by(gender=gender)
 
@@ -359,7 +362,7 @@ class Pet:
     ############################################################
 
     @staticmethod
-    def __check_for_cloud_foundry_binding():
+    def __check_for_cloud_foundry_binding() -> Dict[str, Any]:
         """Checks for Cloud Foundry environment"""
         opts = {}
         if "VCAP_SERVICES" in os.environ:
@@ -372,7 +375,7 @@ class Pet:
         return opts
 
     @staticmethod
-    def __check_for_kubernetes_binding():
+    def __check_for_kubernetes_binding() -> Dict[str, Any]:
         """Checks for Kubernetes environment"""
         opts = {}
         if "BINDING_CLOUDANT" in os.environ:
@@ -381,7 +384,7 @@ class Pet:
         return opts
 
     @staticmethod
-    def __check_for_local_binding():
+    def __check_for_local_binding() -> Dict[str, Any]:
         """Checks for local environment"""
         Pet.logger.info("Looking for local environment bindings")
         opts = {
@@ -394,7 +397,7 @@ class Pet:
         return opts
 
     @staticmethod
-    def init_db(dbname: str = "pets"):
+    def init_db(dbname: str = "pets") -> None:
         """
         Initialized Cloudant database connection
         """
