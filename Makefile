@@ -1,4 +1,4 @@
-# Makefile targets for dvelopment an testing
+# Makefile targets for development an testing
 # Use make help for more info
 
 .PHONY: help
@@ -10,26 +10,36 @@ all: help
 
 ##@ Development
 
+.PHONY: venv
 venv: ## Create a Python virtual environment
 	$(info Creating Python 3 virtual environment...)
-	pipenv --python 3
+	pipenv shell
 
+.PHONY: install
 install: ## Install Python dependencies
 	$(info Installing dependencies...)
-	pipenv install --system --dev
+	sudo pipenv install --system --dev
 
+.PHONY: lint
 lint: ## Run the linter
 	$(info Running linting...)
 	flake8 service tests --count --select=E9,F63,F7,F82 --show-source --statistics
 	flake8 service tests --count --max-complexity=10 --max-line-length=127 --statistics
 	pylint service tests --max-line-length=127
 
+.PHONY: test
 test: ## Run the unit tests
 	$(info Running tests...)
-	pytest
+	export RETRY_COUNT=1; pytest --pspec --cov=service --cov-fail-under=95 --disable-warnings
+
+.PHONY: coverage
+coverage: ## Calculate test coverage
+	$(info Calculating code coverage...)
+	coverage report -m
 
 ##@ Runtime
 
+.PHONY: run
 run: ## Run the service
 	$(info Starting service...)
 	honcho start
