@@ -14,7 +14,7 @@ gunicorn = "==23.0.0"
 
 [dev-packages]
 honcho = "~=2.0.0"
-pylint = "~=3.3.4"
+pylint = "~=4.0.9"
 flake8 = "~=7.1.1"
 black = "~=26.10.1"
 pytest = "~=9.0.3"
